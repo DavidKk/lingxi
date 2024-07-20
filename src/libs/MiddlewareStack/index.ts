@@ -1,6 +1,4 @@
-import type { Middleware } from './types'
-
-export type { Middleware }
+import type { Middleware } from '@/types'
 
 export class MiddlewareStack<T> {
   protected middlewares = new Set<Middleware<T>>()

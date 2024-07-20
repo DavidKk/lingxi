@@ -1,7 +1,8 @@
 import { camelCase, kebabCase, snakeCase, upperCase, upperFirst } from 'lodash'
-import chalk, { type ColorName } from 'chalk'
+import chalk, { type Color } from 'chalk'
 import PrettyError from 'pretty-error'
-import { SERVER_NAME } from '../../constants/conf'
+import { SERVER_NAME } from '@/constants/conf'
+import { formatDate } from '@/utils/formatDate'
 import { Fmt } from './fmt'
 
 export interface LoggerOptions {
@@ -84,7 +85,7 @@ export class Logger {
 
   protected renderMessage(content: string) {
     return content
-      .replace(/\[DATE\]/g, `[${new Date().toISOString()}]`)
+      .replace(/\[DATE\]/g, `[${formatDate()}]`)
       .replace(/<Pascal:(.+?)>/g, (_, $1) => `${upperFirst(camelCase($1))}`)
       .replace(/<Camel:(.+?)>/g, (_, $1) => `${upperCase($1)}`)
       .replace(/<Snake:(.+?)>/g, (_, $1) => `${snakeCase($1)}`)
@@ -94,7 +95,7 @@ export class Logger {
   }
 
   /** 注册着色函数 */
-  protected register(color: ColorName | null, defaultOptions?: RegisterOptions) {
+  protected register(color: typeof Color | null, defaultOptions?: RegisterOptions) {
     const { prefix: defaultPrefix, onlyShowInVerbose = false, verbose: defaultVerbose = this.isVerbose, silence: defaultSilence = this.isSilence } = defaultOptions || {}
     return (info: string | Error, options?: PrintOptions) => {
       const { prefix: inPrefix = defaultPrefix, verbose = defaultVerbose, silence = defaultSilence, prepend, ...restOptions } = options || {}

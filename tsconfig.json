@@ -2,8 +2,7 @@
   "compilerOptions": {
     "target": "es2021",
     "lib": ["es2021"],
-    "jsx": "preserve",
-    "module": "esnext",
+    "module": "CommonJS",
     "moduleResolution": "node",
     "paths": {
       "@/*": ["./src/*"]
@@ -19,7 +18,23 @@
     "strict": true,
     "skipLibCheck": true,
     "incremental": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    // 插件
+    "plugins": [
+      // 路径别名，编译成 .js
+      {
+        "transform": "typescript-transform-paths",
+        "useRootDirs": true,
+        "exclude": ["**/node_modules/**"]
+      },
+      // 路径别名，编译成 .d.ts
+      {
+        "transform": "typescript-transform-paths",
+        "useRootDirs": true,
+        "afterDeclarations": true,
+        "exclude": ["**/node_modules/**"]
+      }
+    ]
   },
   "include": ["**/*.ts", "**/*.tsx", "**/*.d.ts", "**/*.spec.ts"],
   "exclude": ["node_modules"]

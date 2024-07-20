@@ -6,7 +6,7 @@ libs
 coverage
 junit.xml
 *.tsbuildinfo
-qc.memory-card.json
+*.memory-card.json
 
 # Husky
 .husky
