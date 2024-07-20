@@ -1,8 +1,12 @@
 # Dest resouces
-/libs
-/coverage
-/junit.xml
-/gitlab-pages
+libs
+!**/src/**/libs
+!**/__tests__/**/libs
+!**/__typetests__/**/libs
+coverage
+junit.xml
+*.tsbuildinfo
+qc.memory-card.json
 
 
 # Husky
