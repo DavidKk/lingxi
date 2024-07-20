@@ -9,7 +9,8 @@
     "declarationDir": "libs",
     "paths": {
       "@/*": ["./src/*"]
-    },
-    "composite": true
-  }
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.d.ts", "**/*.spec.ts", "typings.d/**/*.d.ts"],
+  "exclude": ["node_modules", "./libs"]
 }

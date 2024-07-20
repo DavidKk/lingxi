@@ -12,7 +12,7 @@
     "format": "prettier --config .prettierrc.js --write \"**/*.{js,jsx,ts,tsx,d.ts,vue,md,json,yml,yaml}\"",
     "lint": "pnpm lint:ts",
     "lint:ts": "eslint -c eslint.config.mjs --fix .",
-    "compile": "tsc -b ./tsconfig.compile.json",
+    "compile": "tsc --build ./tsconfig.compile.json",
     "test": "echo \"ok\"",
     "ok": "npm run format && npm run lint && npm run compile && npm run test"
   },
