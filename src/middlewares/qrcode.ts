@@ -4,9 +4,8 @@ import qrcode from 'qrcode'
 import type { Middleware, QrcodeContext } from '@/types'
 import { SERVER_NAME } from '@/constants/conf'
 import { Apprise } from '@/libs/Apprise'
-import { renderQrcodeEmailContent } from './renderQrcodeEmailContent'
 
-export const qrcodeMiddleware: Middleware<QrcodeContext> = debounce((ctx, next) => {
+const generateQrcodeMiddleware: Middleware<QrcodeContext> = (ctx, next) => {
   const { logger, qrcode: input } = ctx
   const apprise = new Apprise({ logger })
   logger.info(`QR code source is ${input}`)
@@ -30,4 +29,16 @@ export const qrcodeMiddleware: Middleware<QrcodeContext> = debounce((ctx, next) 
   })
 
   next()
-}, 500)
+}
+
+export const qrcodeMiddleware = debounce(generateQrcodeMiddleware, 500)
+
+function renderQrcodeEmailContent(qrcodeBase64: string) {
+  return `
+<h1>微信登录</h1>
+<div>
+  <img src="${qrcodeBase64}" alt="微信二维码" width="200" height="200">
+</div>
+<p>请使用手机微信扫描二维码</p>
+`
+}
