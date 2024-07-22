@@ -33,7 +33,7 @@ export const SystemInstruction = {
   role: 'system',
   parts: [
     {
-      text: 'you are chat robot, do not reply any expect text.',
+      text: 'You are chat robot, do not reply any except text.',
     },
   ],
 }

@@ -46,17 +46,26 @@ export interface GeminiUsageMetadata {
   totalTokenCount: number
 }
 
-export interface GeminiSuccessResp {
+export interface GeminiMessageDTO {
   candidates: GeminiCandidate[]
   usageMetadata: GeminiUsageMetadata
 }
 
-export interface GeminiErrorResp {
-  failed: boolean
-  result: { error: Error }[]
+export interface GeminiExceptionDTO {
   success: boolean
   message: string
   data: null
 }
 
-export type GeminiRespDTO = GeminiSuccessResp[] | GeminiErrorResp
+export interface GeminiFaildResultItem {
+  error: Error
+}
+
+export interface GeminiFailedDTO {
+  failed: boolean
+  message: string
+  result: GeminiFaildResultItem[]
+}
+
+/** 返回体 */
+export type GeminiRespDTO = GeminiMessageDTO[] | GeminiExceptionDTO | GeminiFailedDTO

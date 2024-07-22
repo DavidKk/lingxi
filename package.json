@@ -13,11 +13,11 @@
     "format": "prettier --config .prettierrc.js --write \"**/*.{js,jsx,ts,tsx,d.ts,vue,md,json,yml,yaml}\"",
     "lint": "pnpm lint:ts",
     "lint:ts": "eslint -c eslint.config.mjs --fix .",
-    "compile": "tsc --build ./tsconfig.compile.json",
-    "test": "echo \"ok\"",
+    "test": "jest -c ./jest.config.ts --coverage --reporters=default --reporters=jest-junit",
+    "test:watch": "jest --watch",
     "dev": "tsx watch ./src/index.ts",
     "start": "tsx ./src/index.ts",
-    "ok": "npm run format && npm run lint && npm run compile && npm run test"
+    "ok": "pnpm format && pnpm lint && pnpm test"
   },
   "dependencies": {
     "@types/chalk": "^2.2.0",

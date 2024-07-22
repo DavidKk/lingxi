@@ -1,5 +1,5 @@
 /** 历史记录 */
-export interface History {
+export interface HistoryRecord {
   role: 'human' | 'system'
   user: string
   message: string

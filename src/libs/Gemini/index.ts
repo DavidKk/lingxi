@@ -1,10 +1,10 @@
 import type { ReadableStreamDefaultReader } from 'stream/web'
 import { GEMINI_API_SERVER_URL, GEMINI_API_TOKEN } from '@/constants/conf'
 import { Service } from '@/libs/Service'
+import type { HistoryRecord } from '@/libs/History'
 import { withVercelHeader } from '@/utils/withVercelHeader'
 import { GenerationConfig, SafetySettings } from './conf'
-import type { GeminiContent, GeminiSuccessResp, GeminiRespDTO } from './types'
-import type { History } from '@/types'
+import type { GeminiContent, GeminiMessageDTO, GeminiRespDTO } from './types'
 
 export interface ReadStreamOptions {
   /** 分段更新 */
@@ -47,7 +47,7 @@ export class Gemini extends Service {
     return text
   }
 
-  public convertRecordsToContents(records: History[]): GeminiContent[] {
+  public convertRecordsToContents(records: HistoryRecord[]): GeminiContent[] {
     return Array.from(
       (function* () {
         for (const record of records) {
@@ -123,7 +123,15 @@ export class Gemini extends Service {
       return
     }
 
-    // 处理错误信息
+    if (Array.isArray(repsonse)) {
+      const data: GeminiMessageDTO[] = repsonse
+      const contents = this.extractText(data)
+
+      this.logger.info(`Extract contents: ${JSON.stringify(contents, null, 2)}`)
+      return contents
+    }
+
+    // 错误处理
     if ('failed' in repsonse) {
       const { message, result } = repsonse
       const reasons = Array.from(
@@ -143,18 +151,18 @@ export class Gemini extends Service {
       )
 
       const reason = [message, ...reasons].join('\n')
-      throw new Error(reason)
+      throw new Error(`Remote service call failed. ${reason}`)
     }
 
-    const data: GeminiSuccessResp[] = repsonse
-    const contents = this.extractText(data)
-
-    this.logger.info(`Extract contents: ${JSON.stringify(contents, null, 2)}`)
-    return contents
+    // 错误处理
+    if (repsonse.success === false) {
+      const { message = 'unknown error' } = repsonse
+      throw new Error(`Remote service call failed. ${message}`)
+    }
   }
 
   /** 提取回复内容字符串 */
-  protected extractText(data: GeminiSuccessResp[]) {
+  protected extractText(data: GeminiMessageDTO[]) {
     if (!Array.isArray(data)) {
       this.logger.fail(`ExtractText fail with invalid data, ${JSON.stringify(data, null, 2)}`)
       throw new Error('ExtractText fail with invalid data')

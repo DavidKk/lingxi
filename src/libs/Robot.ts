@@ -1,14 +1,13 @@
 import { Service, type ServiceOptions } from '@/libs/Service'
-import { LimitedArray } from '@/libs/LimitedArray'
+import { History } from '@/libs/History'
 import { Gemini } from '@/libs/Gemini'
-import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_URL, MAX_HISTORY_RECORD } from '@/constants/conf'
-import type { History } from '@/types'
+import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_URL } from '@/constants/conf'
 
 export type RobotOptions = ServiceOptions
 
 export class Robot extends Service {
   protected gemini: Gemini
-  protected history: LimitedArray<History>
+  protected history: History
 
   public get enableGemini() {
     return !!GEMINI_API_SERVER_URL
@@ -18,24 +17,26 @@ export class Robot extends Service {
     super(options)
 
     this.gemini = new Gemini(options)
-    this.history = new LimitedArray(MAX_HISTORY_RECORD)
+    this.history = new History()
   }
 
-  public hear(user: string, message: string) {
+  /** 聆听聊天日志 */
+  public hear(ssid: string, user: string, message: string) {
     this.logger.info(`Heard ${user} said ${message}`)
-    this.history.push({ role: 'human', user, message })
+    this.history.push(ssid, { role: 'human', user, message })
   }
 
-  public async chatWithGemini(user: string, message: string) {
+  /** 与 Gemini 聊天 */
+  public async chatWithGemini(ssid: string, user: string, message: string) {
     if (!this.enableGemini) {
       this.logger.warn('Gemini is disabled')
       return
     }
 
     this.logger.info(`User ${user} chat with gemini and said ${JSON.stringify(message)}`)
-    this.history.push({ role: 'human', user, message })
+    this.history.push(ssid, { role: 'human', user, message })
 
-    const records = this.history.slice(CHAT_SEND_RECORD_COUNT * -1)
+    const records = this.history.slice(ssid, CHAT_SEND_RECORD_COUNT * -1)
     this.logger.info(`Send records: ${JSON.stringify(records)}`)
 
     const contents = this.gemini.convertRecordsToContents(records)
@@ -43,7 +44,7 @@ export class Robot extends Service {
     const replyText = await this.gemini.chat(contents)
 
     this.logger.info(`Gemini reply message ${replyText}`)
-    this.history.push({ role: 'system', user, message })
+    this.history.push(ssid, { role: 'system', user, message })
 
     return replyText
   }

@@ -1,4 +1,4 @@
-import { SERVER_NAME } from '../../../constants/conf'
+import { SERVER_NAME } from '@/constants/conf'
 import type { WechatyOptions } from 'wechaty'
 
 export const WECHAT_ROBOT_OPTIONS: WechatyOptions = {

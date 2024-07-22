@@ -16,17 +16,17 @@ const ding: MessageMiddleware = async (ctx, next) => {
 
 /** 调试 */
 const debug: MessageMiddleware = async (ctx, next) => {
-  const { self, user, message, messager, logger } = ctx
+  const { ssid, isSelf, user, message, messager, logger } = ctx
   if (!message.startsWith('debug')) {
     return next()
   }
 
-  if (!self) {
+  if (!isSelf) {
     return next()
   }
 
   const debugMessage = message.replace(/^debug/, '').trim()
-  const content = await robot.chatWithGemini(user, debugMessage)
+  const content = await robot.chatWithGemini(ssid, user, debugMessage)
   if (!content) {
     logger.warn('Debug chat but no message to reply, skip.')
     return next()
@@ -39,19 +39,19 @@ const debug: MessageMiddleware = async (ctx, next) => {
 
 /** 提到我 */
 const mentionSelf: MessageMiddleware = async (ctx, next) => {
-  const { user, message, messager, logger } = ctx
+  const { ssid, user, message, messager, logger } = ctx
   if (!(await messager.mentionSelf())) {
     return next()
   }
 
   const mentionMessage = message.trim()
-  const content = await robot.chatWithGemini(user, mentionMessage)
+  const content = await robot.chatWithGemini(ssid, user, mentionMessage)
   if (!content) {
-    logger.warn('Mention self but no message to reply, skip.')
+    logger.warn('Mention isSelf but no message to reply, skip.')
     return next()
   }
 
-  logger.info(`Mention self, reply: ${content}`)
+  logger.info(`Mention isSelf, reply: ${content}`)
   await messager.say(content)
   logger.ok(`Reply message success. content: ${content}`)
 }

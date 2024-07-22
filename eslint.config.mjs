@@ -41,7 +41,14 @@ export default [
         },
       ],
     },
-    ignores: ['.next/**/*', '.husky/**/*', 'coverage/**/*', 'libs/**/*', 'node_modules'],
+    ignores: [
+      '.next/**/*',
+      '.husky/**/*',
+      'coverage/**/*',
+      '__tests__/**/*',
+      '__typetests__/**/*',
+      'node_modules'
+    ],
   },
   ...tsConfig,
   ...cjsConfig,
