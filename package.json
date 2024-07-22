@@ -3,18 +3,20 @@
   "version": "1.0.0",
   "private": true,
   "description": "",
+  "type": "commonjs",
   "scripts": {
     "commit": "git-cz",
     "ci:coverage": "pnpm test",
     "postinstall": "node --experimental-modules ./scripts/postinstall.mjs",
     "preinstall": "node --experimental-modules ./scripts/preinstall.mjs",
-    "clear": "rimraf --glob ./libs",
+    "clear": "rimraf --glob ./{libs,build,*.tsbuildinfo}",
     "format": "prettier --config .prettierrc.js --write \"**/*.{js,jsx,ts,tsx,d.ts,vue,md,json,yml,yaml}\"",
     "lint": "pnpm lint:ts",
     "lint:ts": "eslint -c eslint.config.mjs --fix .",
     "compile": "tsc --build ./tsconfig.compile.json",
     "test": "echo \"ok\"",
-    "start": "node ./libs/index.js",
+    "dev": "tsx watch ./src/index.ts",
+    "start": "tsx ./src/index.ts",
     "ok": "npm run format && npm run lint && npm run compile && npm run test"
   },
   "dependencies": {
@@ -33,6 +35,7 @@
     "wechaty-puppet-wechat": "^1.18.4"
   },
   "devDependencies": {
+    "tsx": "^4.16.2",
     "@commitlint/cli": "^19.3.0",
     "@commitlint/config-conventional": "^19.2.2",
     "@jest/types": "^29.6.3",

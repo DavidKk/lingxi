@@ -1,12 +1,13 @@
 import axios from 'axios'
 import { SERVER_NAME, APPRISE_SERVER_URL } from '@/constants/conf'
 import { createHeader } from '@/utils/createHeader'
-import { Logger } from '@/libs/Logger'
+import type { ServiceOptions } from '@/libs/Service'
+import { Service } from '@/libs/Service'
 import type { Message } from './types'
 
-export class Apprise {
-  protected logger = new Logger({ name: 'Apprise' })
+export type AppriseOptions = ServiceOptions
 
+export class Apprise extends Service {
   async notify(message: Message) {
     if (!APPRISE_SERVER_URL) {
       this.logger.warn('APPRISE_SERVER_URL is not set, skip notify')

@@ -1,8 +1,8 @@
-import { Robot } from './libs/Robot'
+import { WeChat } from './libs/WeChat'
 import { qrcodeMiddleware } from './middlewares/qrcode'
 import { mentionMiddleware } from './middlewares/mention'
 
-const app = new Robot()
+const app = new WeChat()
 app.use('qrcode', qrcodeMiddleware)
 app.use('message', mentionMiddleware)
 app.start()

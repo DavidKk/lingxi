@@ -1,13 +1,14 @@
 import { debounce } from 'lodash'
 import qrcodeTerminal from 'qrcode-terminal'
 import qrcode from 'qrcode'
-import { Apprise } from '@/libs/Apprise'
 import type { Middleware, QrcodeContext } from '@/types'
+import { SERVER_NAME } from '@/constants/conf'
+import { Apprise } from '@/libs/Apprise'
 import { renderQrcodeEmailContent } from './renderQrcodeEmailContent'
 
 export const qrcodeMiddleware: Middleware<QrcodeContext> = debounce((ctx, next) => {
-  const apprise = new Apprise()
-  const { qrcode: input, logger } = ctx
+  const { logger, qrcode: input } = ctx
+  const apprise = new Apprise({ logger })
   logger.info(`QR code source is ${input}`)
 
   qrcodeTerminal.generate(input, { small: true }, (qrcode) => {
@@ -25,7 +26,7 @@ export const qrcodeMiddleware: Middleware<QrcodeContext> = debounce((ctx, next) 
     logger.ok(`Generate qrcode success. qrcode base64 is ${url}`)
 
     const html = renderQrcodeEmailContent(url)
-    await apprise.notify({ title: 'WeChatRobot Launch', body: html, format: 'html' })
+    await apprise.notify({ title: `${SERVER_NAME} Launch`, body: html, format: 'html' })
   })
 
   next()

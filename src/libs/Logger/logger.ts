@@ -4,6 +4,7 @@ import PrettyError from 'pretty-error'
 import { SERVER_NAME } from '@/constants/conf'
 import { formatDate } from '@/utils/formatDate'
 import { Fmt } from './fmt'
+import { format } from '@/utils/format'
 
 export interface LoggerOptions {
   name?: string
@@ -29,6 +30,8 @@ export interface RegisterOptions extends PrettyOptions {
 export interface PrintOptions extends RegisterOptions {
   prepend?: string
 }
+
+export type LoggerMessage = string | string[] | Error
 
 export class Logger {
   public fmt = new Fmt()
@@ -73,9 +76,10 @@ export class Logger {
   }
 
   /** 基础着色函数 */
-  protected pretty(info: string | Error, options?: PrettyOptions) {
+  protected pretty(info: LoggerMessage, options?: PrettyOptions) {
     const { prefix, verbose = false } = options || {}
-    const reason = info instanceof Error ? info : new Error(info)
+    const infoText = Array.isArray(info) && info.length > 1 ? format(info[0], ...info.slice(1)) : info.toString()
+    const reason = info instanceof Error ? info : new Error(infoText)
     const pe = new PrettyError()
     const prettyMessage = pe.render(reason)
     const content = `${reason.message}${verbose === true ? `\n${prettyMessage}` : ''}`
@@ -97,7 +101,7 @@ export class Logger {
   /** 注册着色函数 */
   protected register(color: typeof Color | null, defaultOptions?: RegisterOptions) {
     const { prefix: defaultPrefix, onlyShowInVerbose = false, verbose: defaultVerbose = this.isVerbose, silence: defaultSilence = this.isSilence } = defaultOptions || {}
-    return (info: string | Error, options?: PrintOptions) => {
+    return (info: LoggerMessage, options?: PrintOptions) => {
       const { prefix: inPrefix = defaultPrefix, verbose = defaultVerbose, silence = defaultSilence, prepend, ...restOptions } = options || {}
       const prefix = [inPrefix, prepend].filter(Boolean).join(' ')
       const { message: inMessage, reason, prettyMessage } = this.pretty(info, { prefix, ...restOptions, verbose })
