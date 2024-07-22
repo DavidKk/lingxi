@@ -17,7 +17,7 @@ export const GEMINI_VERCEL_SECRET = `${process.env.GEMINI_VERCEL_SECRET}`
 /** 存储最大记录数 */
 export const MAX_HISTORY_RECORD = 200
 /** 发送聊天记录数 */
-export const CHAT_SEND_RECORD_COUNT = 2
+export const CHAT_SEND_RECORD_COUNT = 20
 
 /** wechaty 默认配置 */
 export const WECHATY_DEFAULT_OPTIONS: WechatyOptions = {

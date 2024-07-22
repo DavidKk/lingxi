@@ -11,7 +11,9 @@ const ding: MessageMiddleware = async (ctx, next) => {
     return next()
   }
 
+  logger.info('Received ding message, and reply dong.')
   await messager.say('dong')
+  logger.ok('Reply message success.')
 }
 
 /** 调试 */
@@ -22,6 +24,7 @@ const debug: MessageMiddleware = async (ctx, next) => {
   }
 
   if (!isSelf) {
+    logger.warn('Received debug message but not self, skip.')
     return next()
   }
 
@@ -39,8 +42,8 @@ const debug: MessageMiddleware = async (ctx, next) => {
 
 /** 提到我 */
 const mentionSelf: MessageMiddleware = async (ctx, next) => {
-  const { ssid, user, message, messager, logger } = ctx
-  if (!(await messager.mentionSelf())) {
+  const { ssid, isRoom, user, message, messager, logger } = ctx
+  if (!(!isRoom || (await messager.mentionSelf()))) {
     return next()
   }
 
@@ -53,7 +56,7 @@ const mentionSelf: MessageMiddleware = async (ctx, next) => {
 
   logger.info(`Mention isSelf, reply: ${content}`)
   await messager.say(content)
-  logger.ok(`Reply message success. content: ${content}`)
+  logger.ok(`Reply message success. content.`)
 }
 
 export const chatMiddleware = combineMiddlewares(ding, debug, mentionSelf)

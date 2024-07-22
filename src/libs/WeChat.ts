@@ -35,6 +35,7 @@ export class WeChat {
 
     this.logger = new Logger({ showTime: true })
     this.wechaty = WechatyBuilder.build(wechatyOptions)
+
     this.middlewares = {
       qrcode: new MiddlewareCoordinator<QrcodeContext>(),
       message: new MiddlewareCoordinator<MessageContext>(),
@@ -83,6 +84,8 @@ export class WeChat {
 
   /** 重启 */
   public async restart() {
+    this.logger.info('WeChat restart.')
+
     await this.wechaty.reset()
     await this.start()
   }
@@ -100,20 +103,22 @@ export class WeChat {
     const talker = messager.talker()
     const user = talker.name()
     const isSelf = talker.self()
-    const ssid = (await room?.topic()) || user
+    const isRoom = !!room
+    const ssid = room?.id || talker.id
 
     if (!ssid) {
-      this.logger.warn('Received message but no ssid, skip')
+      this.logger.warn('Ssid does not exist, skip.')
       return
     }
 
     if (!message) {
-      this.logger.warn('Received message is empty, skip')
+      this.logger.warn('Message is empty, skip.')
       return
     }
 
-    const context = this.createContext({ ssid, isSelf, user, message, messager })
-    this.logger.info(`Received message: ${JSON.stringify(context, null, 2)}`)
+    this.logger.info(`Received message is ${message} by ${user} #${ssid}.`)
+
+    const context = this.createContext({ ssid, isRoom, isSelf, user, message, messager })
     this.middlewares.message.execute(context)
   }
 
@@ -158,7 +163,7 @@ export class WeChat {
   }
 
   /** 处理登录后事件 */
-  protected handleLogin(user: ContactSelfInterface) {
+  protected async handleLogin(user: ContactSelfInterface) {
     this.logger.info(`${user} logined.`)
 
     this._isLoginning = false
@@ -171,13 +176,13 @@ export class WeChat {
 
   /** 处理错误事件 */
   protected handleError(error: Error) {
-    this.logger.fail(error)
+    this.logger.fail(`Some errors occurred in Wechaty\n${error}`)
   }
 
   /** 处理心跳事件 */
-  protected async handleHeartBeat(data: WechatyEventListenerHeartbeat) {
+  protected async handleHeartBeat() {
     const status = this.status
-    this.logger.info(`ping wechat. data: ${JSON.stringify(data)}. ${JSON.stringify(this.status, null, 2)}`)
+    this.logger.info(`ping wechat. status: ${JSON.stringify(this.status)}`)
 
     if (status.started && !status.logined && !status.loginning) {
       this._isScanQrcode = false

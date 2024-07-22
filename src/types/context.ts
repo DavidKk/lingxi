@@ -16,6 +16,8 @@ export interface MessageContext extends Context {
   user: string
   /** 内容 */
   message: string
+  /** 是否为群聊 */
+  isRoom: boolean
   /** 是否为自己的信息 */
   isSelf: boolean
   messager: MessageInterface

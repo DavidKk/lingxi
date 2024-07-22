@@ -37,14 +37,13 @@ export class Robot extends Service {
     this.history.push(ssid, { role: 'human', user, message })
 
     const records = this.history.slice(ssid, CHAT_SEND_RECORD_COUNT * -1)
-    this.logger.info(`Send records: ${JSON.stringify(records)}`)
+    this.logger.info(`Find ${records} records.`)
 
     const contents = this.gemini.convertRecordsToContents(records)
-    this.logger.info(`Convert recrods to contents: ${JSON.stringify(contents)}`)
     const replyText = await this.gemini.chat(contents)
 
     this.logger.info(`Gemini reply message ${replyText}`)
-    this.history.push(ssid, { role: 'system', user, message })
+    this.history.push(ssid, { role: 'system', user, message: replyText })
 
     return replyText
   }

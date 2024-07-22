@@ -25,7 +25,7 @@ export class Gemini extends Service {
     const url = `${GEMINI_API_SERVER_URL}?key=${GEMINI_API_TOKEN}`
     const body = JSON.stringify(payload)
 
-    this.logger.info(`Chat with Gemini: ${JSON.stringify(body, null, 2)}. headers: ${JSON.stringify(Object.fromEntries(headers.entries()), null, 2)}`)
+    this.logger.info(`Chat with Gemini. contents: ${JSON.stringify(payload.contents, null, 2)}`)
     const response = await fetch(url, { method: 'POST', headers, body })
     if (!(200 <= response.status && response.status < 400)) {
       throw new Error(`Chat with Gemini failed with status: ${response.status}`)
@@ -38,7 +38,7 @@ export class Gemini extends Service {
 
     const text = await this.processIncrementalStream(reader, {
       onSegmentUpdate: (remainText) => {
-        this.logger.info(`The confirmed content is: ${remainText}`)
+        this.logger.debug(`The confirmed content is: ${remainText}`)
       },
     })
 
@@ -89,7 +89,7 @@ export class Gemini extends Service {
 
       const textArray = this.processPartialData(partialData)
       if (!textArray) {
-        this.logger.warn('No data found.')
+        this.logger.debug('No data found.')
         continue
       }
 
@@ -118,7 +118,7 @@ export class Gemini extends Service {
     // 因为字符串数据可能不是完整的 JSON，这里如果出错则返回空
     const repsonse = this.tryParseJson<GeminiRespDTO>(source)
     if (!repsonse) {
-      this.logger.warn('No valid JSON found.')
+      this.logger.debug('No valid JSON found.')
       return
     }
 
