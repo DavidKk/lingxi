@@ -58,8 +58,7 @@ export async function husky(options = {}) {
   const commands = Object.keys(hookCommands).reduce((commands, hook) => {
     const scripts = hookCommands[hook]
     if (Array.isArray(scripts) && scripts.length > 0) {
-      const head = ['#!/usr/bin/env sh', '. "$(dirname -- "$0")/_/husky.sh"']
-      commands.push(`echo '${[...head, ...scripts].join('\n')}' > .husky/${hook}`)
+      commands.push(`echo '${scripts.join('\n')}' > .husky/${hook}`)
     }
 
     return commands
