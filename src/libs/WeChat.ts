@@ -95,13 +95,12 @@ export class WeChat {
 
   /** 处理聊天事件 */
   protected async handleMessage(messager: MessageInterface) {
-    const contact = messager.from()
     const message = messager.text()
     const room = messager.room()
     const talker = messager.talker()
     const user = talker.name()
     const isSelf = talker.self()
-    const ssid = (await room?.topic()) || contact?.name()
+    const ssid = (await room?.topic()) || user
 
     if (!ssid) {
       this.logger.warn('Received message but no ssid, skip')
@@ -151,7 +150,7 @@ export class WeChat {
     }
 
     if (status === ScanStatus.Unknown) {
-      this.logger.info('unknown error.')
+      this.logger.fail('unknown error.')
 
       this._isLoginning = false
       return
