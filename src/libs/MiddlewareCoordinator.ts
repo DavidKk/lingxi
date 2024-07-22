@@ -1,4 +1,6 @@
-import type { Middleware } from '@/types'
+export type MiddlewareNext = () => Promise<void> | void
+
+export type Middleware<T> = (context: T, next: MiddlewareNext) => Promise<void> | void
 
 export class MiddlewareCoordinator<T> {
   protected middlewares = new Set<Middleware<T>>()

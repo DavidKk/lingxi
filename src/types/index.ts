@@ -1,5 +1,4 @@
 export * from './context'
-export * from './history'
 export * from './middleware'
-export * from './utils'
 export * from './wechaty'
+export * from './utils'

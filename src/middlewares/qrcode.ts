@@ -1,11 +1,11 @@
 import { debounce } from 'lodash'
 import qrcodeTerminal from 'qrcode-terminal'
 import qrcode from 'qrcode'
-import type { Middleware, QrcodeContext } from '@/types'
+import type { QrcodeMiddleware } from '@/types'
 import { SERVER_NAME } from '@/constants/conf'
 import { Apprise } from '@/libs/Apprise'
 
-const generateQrcodeMiddleware: Middleware<QrcodeContext> = (ctx, next) => {
+const generateQrcodeMiddleware: QrcodeMiddleware = (ctx, next) => {
   const { logger, qrcode: input } = ctx
   const apprise = new Apprise({ logger })
   logger.info(`QR code source is ${input}`)
