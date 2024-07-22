@@ -56,4 +56,4 @@ const mentionSelf: MessageMiddleware = async (ctx, next) => {
   logger.ok(`Reply message success. content: ${content}`)
 }
 
-export const mentionMiddleware = combineMiddlewares(ding, debug, mentionSelf)
+export const chatMiddleware = combineMiddlewares(ding, debug, mentionSelf)

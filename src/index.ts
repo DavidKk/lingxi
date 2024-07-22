@@ -1,8 +1,8 @@
 import { WeChat } from './libs/WeChat'
 import { qrcodeMiddleware } from './middlewares/qrcode'
-import { mentionMiddleware } from './middlewares/mention'
+import { chatMiddleware } from './middlewares/chat'
 
 const app = new WeChat()
 app.use('qrcode', qrcodeMiddleware)
-app.use('message', mentionMiddleware)
+app.use('message', chatMiddleware)
 app.start()
