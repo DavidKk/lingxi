@@ -1,4 +1,4 @@
-import type { Middleware, MiddlewareNext } from '@/types'
+import type { Middleware, MiddlewareNext } from '@/libs/MiddlewareCoordinator'
 
 export function combineMiddlewares<T>(...middlewares: Middleware<T>[]): Middleware<T> {
   return async (context: T, next: MiddlewareNext) => {

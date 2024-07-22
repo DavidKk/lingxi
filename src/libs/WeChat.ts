@@ -1,14 +1,19 @@
-import { WechatyBuilder, ScanStatus } from 'wechaty'
+import { WechatyBuilder, ScanStatus, type WechatyOptions } from 'wechaty'
 import type { ContactSelfInterface, MessageInterface, WechatyInterface } from 'wechaty/impls'
 import type { WechatyEventListenerHeartbeat } from 'wechaty/dist/esm/src/schemas/wechaty-events'
 import { Logger } from '@/libs/Logger'
 import { MiddlewareCoordinator } from '@/libs/MiddlewareCoordinator'
+import { WECHATY_DEFAULT_OPTIONS } from '@/constants/conf'
 import type { MessageContext, QrcodeContext, MiddlewareRegistry, MiddlewareType, EventType, EventHandler } from '@/types'
-import { WECHAT_ROBOT_OPTIONS } from './constants'
+
+export interface WeChatOptions {
+  wechatyOptions: WechatyOptions
+}
 
 export class WeChat {
   protected logger: Logger
   protected wechaty: WechatyInterface
+  protected wechatyOptions: WechatyOptions
   protected middlewares: MiddlewareRegistry
 
   protected _isScanQrcode: boolean
@@ -22,13 +27,14 @@ export class WeChat {
     return { started, logined, loginning }
   }
 
-  constructor() {
+  constructor(options?: WeChatOptions) {
+    const { wechatyOptions = WECHATY_DEFAULT_OPTIONS } = options || {}
     this._isScanQrcode = false
     this._isLoginning = false
     this._isStarted = false
 
     this.logger = new Logger({ showTime: true })
-    this.wechaty = WechatyBuilder.build(WECHAT_ROBOT_OPTIONS)
+    this.wechaty = WechatyBuilder.build(wechatyOptions)
     this.middlewares = {
       qrcode: new MiddlewareCoordinator<QrcodeContext>(),
       message: new MiddlewareCoordinator<MessageContext>(),

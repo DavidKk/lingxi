@@ -1,10 +1,9 @@
 import type { ReadableStreamDefaultReader } from 'stream/web'
-import { GEMINI_API_SERVER_URL, GEMINI_API_TOKEN } from '@/constants/conf'
 import { Service } from '@/libs/Service'
 import type { HistoryRecord } from '@/libs/History'
 import { withVercelHeader } from '@/utils/withVercelHeader'
-import { GenerationConfig, SafetySettings } from './conf'
-import type { GeminiContent, GeminiMessageDTO, GeminiRespDTO } from './types'
+import { GEMINI_API_SERVER_URL, GEMINI_API_TOKEN, GenerationConfig, SafetySettings } from '@/constants/conf'
+import type { GeminiContent, GeminiMessageDTO, GeminiRespDTO } from '@/types'
 
 export interface ReadStreamOptions {
   /** 分段更新 */
@@ -197,8 +196,8 @@ export class Gemini extends Service {
       contents,
       generationConfig: {
         temperature: GenerationConfig.temperature,
-        maxOutputTokens: GenerationConfig.max_tokens,
-        topP: GenerationConfig.top_p,
+        maxOutputTokens: GenerationConfig.maxOutputTokens,
+        topP: GenerationConfig.topP,
       },
       safetySettings: [...SafetySettings],
     }
