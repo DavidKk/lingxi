@@ -5,7 +5,7 @@ import { warn, info, fail, ok } from './print.mjs'
 
 const inPlatform = (platform) => platform === process.platform
 
-export const husky = async (options = {}) => {
+export async function husky(options = {}) {
   const git = path.join(process.cwd(), '.git')
   const isGitRepo = fs.existsSync(git) && (await fs.promises.stat(git)).isDirectory()
   if (!isGitRepo) {
@@ -58,14 +58,15 @@ export const husky = async (options = {}) => {
   const commands = Object.keys(hookCommands).reduce((commands, hook) => {
     const scripts = hookCommands[hook]
     if (Array.isArray(scripts) && scripts.length > 0) {
-      commands.push(`husky set .husky/${hook} "${scripts.join('\n')}"`)
+      const head = ['#!/usr/bin/env sh', '. "$(dirname -- "$0")/_/husky.sh"']
+      commands.push(`echo '${[...head, ...scripts].join('\n')}' > .husky/${hook}`)
     }
 
     return commands
   }, [])
 
   if (commands.length > 0) {
-    const scripts = ['husky install'].concat(commands).filter(Boolean).join(' && ')
+    const scripts = ['husky'].concat(commands).filter(Boolean).join(' && ')
     execSync(scripts, { stdio: 'inherit', cwd })
   }
 
