@@ -23,10 +23,13 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Run custom script
-        run: |
-          pnpm install
-          pnpm compile
+      - name: Install NodeJS
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'latest'
+
+      - run: pnpm install
+      - run: pnpm compile
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v6

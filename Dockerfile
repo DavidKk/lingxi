@@ -17,6 +17,6 @@ RUN corepack enable
 # 克隆文件
 COPY package.json pnpm-lock.yaml libs ./ai-assistant-wechat
 # 安装依赖
-RUN cd ./ai-assistant-wechat && pnpm install --prod
+RUN cd ./ai-assistant-wechat && pnpm install --prod --ignore-scripts
 # 运行代码
 CMD cd ./ai-assistant-wechat && pnpm start
