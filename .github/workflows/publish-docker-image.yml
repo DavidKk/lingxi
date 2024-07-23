@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: 'latest'
 
+      - run: corepack enable
       - run: pnpm install
       - run: pnpm compile
 
