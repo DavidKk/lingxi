@@ -15,7 +15,7 @@ RUN npm i -g npm@latest
 # 开启 corepack
 RUN corepack enable
 # 克隆文件
-RUN git clone https://github.com/DavidKk/ai-assistant-wechat.git
+COPY . ./ai-assistant-wechat
 # 安装依赖
 RUN cd ./ai-assistant-wechat && pnpm install
 # 运行代码
