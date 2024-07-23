@@ -1,15 +1,11 @@
 FROM debian:buster AS builder
-
 # 安装必要的工具和依赖
 RUN apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y curl tar xz-utils python3 make g++ git && \
     apt-get install -y chromium
-
 # 安装 NodeJS 与 NPM
 RUN apt-get install -y nodejs npm
-# 设置淘宝源
-RUN npm config set registry https://registry.npmmirror.com
 # 安装 NodeJS 版本管理器 
 RUN npm i -g n
 # 安装最新 Nodejs
@@ -18,10 +14,9 @@ RUN n latest
 RUN npm i -g npm@latest
 # 开启 corepack
 RUN corepack enable
-
 # 克隆文件
 RUN git clone https://github.com/DavidKk/ai-assistant-wechat.git
+# 安装依赖
 RUN cd ./ai-assistant-wechat && pnpm install
-
 # 运行代码
 CMD cd ./ai-assistant-wechat && pnpm start
