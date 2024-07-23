@@ -19,7 +19,7 @@ RUN mkdir -p ./ai-assistant-wechat
 COPY ./package.json ./ai-assistant-wechat/package.json
 COPY ./pnpm-lock.yaml ./ai-assistant-wechat/pnpm-lock.yaml
 COPY ./libs ./ai-assistant-wechat/libs
-pnpm-lock.yaml libs
+
 # 安装依赖
 RUN cd ./ai-assistant-wechat && pnpm install --prod --ignore-scripts
 # 运行代码
