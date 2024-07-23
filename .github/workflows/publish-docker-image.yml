@@ -28,4 +28,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: ghcr.io/${{ github.repository | downcase }}:${{ github.ref_name | downcase }}
+          tags: ghcr.io/davidkk/ai-assistant-wechat:${{ github.ref_name }}

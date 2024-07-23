@@ -4,6 +4,10 @@
   "private": true,
   "description": "",
   "type": "commonjs",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DavidKk/ai-assistant-wechat.git"
+  },
   "scripts": {
     "commit": "git-cz",
     "ci:coverage": "pnpm test",
