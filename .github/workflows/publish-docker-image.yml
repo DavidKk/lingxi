@@ -28,4 +28,4 @@ jobs:
         with:
           context: .
           push: true
-          tags: davidkk/ai-assistant-wechat:latest, davidkk/ai-assistant-wechat:${{ github.ref_name }}
+          tags: ghcr.io/DavidKk/ai-assistant-wechat:latest, ghcr.io/DavidKk/ai-assistant-wechat:${{ github.ref_name }}
