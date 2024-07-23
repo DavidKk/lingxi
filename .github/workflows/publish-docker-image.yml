@@ -27,5 +27,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64,linux/arm64/v8
           push: true
           tags: ghcr.io/davidkk/ai-assistant-wechat:latest, ghcr.io/davidkk/ai-assistant-wechat:${{ github.ref_name }}
