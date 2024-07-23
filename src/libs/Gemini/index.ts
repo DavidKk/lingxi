@@ -169,9 +169,11 @@ export class Gemini extends Service {
 
     const contents = Array.from(
       (function* () {
-        for (const { candidates = [] } of data) {
-          for (const { content } of candidates) {
-            const { parts } = content
+        for (const dataItem of data) {
+          const candidates = dataItem.candidates || []
+          for (const candidate of candidates) {
+            const content = candidate.content || {}
+            const parts = content?.parts || []
             yield parts.map(({ text }) => text).join('')
           }
         }
