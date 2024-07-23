@@ -23,6 +23,11 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Run custom script
+        run: |
+          pnpm install
+          pnpm compile
+
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:

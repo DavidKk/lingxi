@@ -8,18 +8,6 @@ importers:
 
   .:
     dependencies:
-      '@types/chalk':
-        specifier: ^2.2.0
-        version: 2.2.0
-      '@types/lodash':
-        specifier: ^4.17.7
-        version: 4.17.7
-      '@types/qrcode':
-        specifier: ^1.5.5
-        version: 1.5.5
-      '@types/qrcode-terminal':
-        specifier: ^0.12.2
-        version: 0.12.2
       axios:
         specifier: ^1.7.2
         version: 1.7.2(debug@2.6.9)
@@ -57,12 +45,24 @@ importers:
       '@jest/types':
         specifier: ^29.6.3
         version: 29.6.3
+      '@types/chalk':
+        specifier: ^2.2.0
+        version: 2.2.0
       '@types/jest':
         specifier: ^29.5.12
         version: 29.5.12
+      '@types/lodash':
+        specifier: ^4.17.7
+        version: 4.17.7
       '@types/node':
         specifier: ^20.14.11
         version: 20.14.11
+      '@types/qrcode':
+        specifier: ^1.5.5
+        version: 1.5.5
+      '@types/qrcode-terminal':
+        specifier: ^0.12.2
+        version: 0.12.2
       '@types/react':
         specifier: 18.3.3
         version: 18.3.3

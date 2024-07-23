@@ -4,6 +4,8 @@ import tsConfig from './eslintrc/ts.mjs'
 import cjsConfig from './eslintrc/cjs.mjs'
 import esmConfig from './eslintrc/esm.mjs'
 
+const ignores = ['.next/**/*', '.husky/**/*', 'coverage/**/*', 'libs/**/*', '__tests__/**/*', '__typetests__/**/*', 'node_modules']
+
 export default [
   {
     languageOptions: {
@@ -41,16 +43,18 @@ export default [
         },
       ],
     },
-    ignores: [
-      '.next/**/*',
-      '.husky/**/*',
-      'coverage/**/*',
-      '__tests__/**/*',
-      '__typetests__/**/*',
-      'node_modules'
-    ],
+    ignores,
   },
-  ...tsConfig,
-  ...cjsConfig,
-  ...esmConfig,
+  {
+    ...tsConfig,
+    ignores,
+  },
+  {
+    ...cjsConfig,
+    ignores,
+  },
+  {
+    ...esmConfig,
+    ignores,
+  },
 ]
