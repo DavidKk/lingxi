@@ -23,15 +23,6 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install NodeJS
-        uses: actions/setup-node@v4
-        with:
-          node-version: 'latest'
-
-      - run: corepack enable
-      - run: pnpm install
-      - run: pnpm compile
-
       - name: Build and push Docker image
         uses: docker/build-push-action@v6
         with:

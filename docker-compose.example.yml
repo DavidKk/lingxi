@@ -1,0 +1,20 @@
+version: '3.8'
+services:
+  ai-assistant-wechat:
+    container_name: ai-assistant-wechat
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    volumn:
+      - path/to/node_modules:/ai-assistant-wechat/node_modules # option
+      - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
+    environment:
+      - NODE_ENV=production
+      # Apprise 服务地址
+      - APPRISE_SERVER_URL=
+      # Gemini API 地址
+      - GEMINI_API_SERVER_URL=
+      # Gemini API 请求 TOKEN
+      - GEMINI_API_TOKEN=
+      # Gemini Vercel 秘钥
+      - GEMINI_VERCEL_SECRET=
