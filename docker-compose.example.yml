@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: ./Dockerfile
-    volumn:
+    volumes:
       - path/to/node_modules:/ai-assistant-wechat/node_modules # option
       - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
     environment:
