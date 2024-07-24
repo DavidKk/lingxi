@@ -47,14 +47,14 @@ const mentionSelf: MessageMiddleware = async (ctx, next) => {
     return next()
   }
 
-  const mentionMessage = message.trim()
+  const mentionMessage = message.replace(/@(.+)\s+/gm, '').trim()
   const content = await robot.chatWithGemini(ssid, user, mentionMessage)
   if (!content) {
-    logger.warn('Mention isSelf but no message to reply, skip.')
+    logger.warn('Mention me but no message to reply, skip.')
     return next()
   }
 
-  logger.info(`Mention isSelf, reply: ${content}`)
+  logger.info(`Mention me, reply: ${content}`)
   await messager.say(content)
   logger.ok(`Reply message success. content.`)
 }
