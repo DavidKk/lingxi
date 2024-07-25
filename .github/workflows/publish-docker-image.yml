@@ -15,4 +15,4 @@ jobs:
         with:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          tags: latest,${{ github.ref_name }}
+          tags: ghcr.io/davidkk/ai-assistant-wechat:latest, ghcr.io/davidkk/ai-assistant-wechat:${{ github.ref_name }}
