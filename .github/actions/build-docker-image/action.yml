@@ -3,12 +3,13 @@ description: Build docker images.
 author: DavidJones
 
 inputs:
-  codecov_token:
-    description: 'Codecov Token'
+  username:
+    description: 'GitHub Container Registry Username'
     required: true
-  artifact_name:
-    description: 'The file name of artifacts'
-    required: false
+    default: ''
+  password:
+    description: 'GitHub Container Registry Password'
+    required: true
     default: ''
 
 runs:
@@ -24,8 +25,8 @@ runs:
       uses: docker/login-action@v3
       with:
         registry: ghcr.io
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
+        username: ${{ inputs:username }}
+        password: ${{ inputs:password }}
 
     - name: Install NodeJS
       uses: actions/setup-node@v4
