@@ -4,14 +4,14 @@ FROM debian:buster AS builder
 RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install -y curl tar xz-utils python3 make g++ wget build-essential git chromium
-RUN mkdir /glibc && cd /glibc && \
-    wget http://ftp.gnu.org/gnu/glibc/glibc-2.33.tar.gz && \
-    tar -xzvf glibc-2.33.tar.gz && \
-    cd glibc-2.33 && \
-    mkdir build && cd build && \
-    ../configure --prefix=/usr && \
-    make -j$(nproc) && \
-    make install
+RUN mkdir /glibc && cd /glibc
+RUN wget http://ftp.gnu.org/gnu/glibc/glibc-2.33.tar.gz
+RUN tar -xzvf glibc-2.33.tar.gz
+RUN cd glibc-2.33
+RUN mkdir build && cd build
+RUN ../configure --prefix=/usr
+RUN make -j$(nproc)
+RUN make install
 
 # 安装 NodeJS 与 NPM
 RUN apt-get install -y nodejs npm
