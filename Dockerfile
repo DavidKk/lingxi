@@ -6,7 +6,6 @@ RUN sed -i 's/deb http://ftp.debian.org/debian experimental main/deb http://ftp.
     apt-get upgrade -y && \
     apt-get install -y curl tar xz-utils python3 make g++ wget git && \
     apt-get install -y chromium && \
-    # 安装 glibc
     apt-get -t sid install libc6-amd64 libc6-dev libc6-dbg
 
 # 安装 NodeJS 与 NPM
