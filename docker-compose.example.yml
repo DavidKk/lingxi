@@ -6,7 +6,9 @@ services:
       context: .
       dockerfile: ./Dockerfile
     volumes:
+      - path/to/libs:/ai-assistant-wechat/libs # option
       - path/to/node_modules:/ai-assistant-wechat/node_modules # option
+      - path/to/package.json:/ai-assistant-wechat/package.json:rw # option
       - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
     environment:
       - NODE_ENV=production
