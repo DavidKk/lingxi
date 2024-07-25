@@ -12,6 +12,9 @@ jobs:
     steps:
       - name: Build docker image
         uses: DavidKk/ai-assistant-wechat/.github/actions/build-docker-image@main
+        with:
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Push docker image
         uses: docker/build-push-action@v6
