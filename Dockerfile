@@ -3,10 +3,15 @@ FROM debian:buster AS builder
 # 安装必要的工具和依赖
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install -y curl tar xz-utils python3 make g++ wget git chromium
-RUN wget http://ftp.debian.org/debian/pool/main/g/glibc/libc6_2.39-4_arm64.deb
-RUN sudo dpkg -i libc6_2.39-4_arm64.deb
-RUN ldd --version
+RUN apt-get install -y curl tar xz-utils python3 make g++ wget build-essential git chromium
+RUN mkdir /glibc && cd /glibc && \
+    wget http://ftp.gnu.org/gnu/glibc/glibc-2.33.tar.gz && \
+    tar -xzvf glibc-2.33.tar.gz && \
+    cd glibc-2.33 && \
+    mkdir build && cd build && \
+    ../configure --prefix=/usr && \
+    make -j$(nproc) && \
+    make install
 
 # 安装 NodeJS 与 NPM
 RUN apt-get install -y nodejs npm
