@@ -2,11 +2,20 @@ FROM debian:buster AS builder
 # 安装必要的工具和依赖
 RUN apt-get update && \
     apt-get upgrade -y && \
-    apt-get install -y curl tar xz-utils python3 make g++ git && \
+    apt-get install -y curl tar xz-utils python3 make g++ wget git && \
     apt-get install -y chromium
+# 安装 glibc 2.33
+RUN wget https://ftp.gnu.org/gnu/glibc/glibc-2.33.tar.gz && \
+    tar -xzf glibc-2.33.tar.gz && \
+    cd glibc-2.3 && \
+    mkdir build && \
+    cd build && \
+    ../configure --prefix=/usr && \
+    make -j$(nproc) && \
+    make install
 # 安装 NodeJS 与 NPM
 RUN apt-get install -y nodejs npm
-# 安装 NodeJS 版本管理器 
+# 安装 NodeJS 版本管理器
 RUN npm i -g n
 # 安装最新 Nodejs
 RUN n latest
