@@ -1,7 +1,7 @@
 FROM debian:buster AS builder
 
 # 安装必要的工具和依赖
-RUN sed -i 's/deb http://ftp.debian.org/debian experimental main/deb http://ftp.debian.org/debian sid main/g' /etc/apt/sources.list && \
+RUN echo 'deb http://ftp.debian.org/debian sid main' > /etc/apt/sources.list && \
     apt-get update && \
     apt-get upgrade -y && \
     apt-get install -y curl tar xz-utils python3 make g++ wget git && \
