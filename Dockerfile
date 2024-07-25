@@ -3,10 +3,9 @@ FROM debian:buster AS builder
 # 安装必要的工具和依赖
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install -y curl tar xz-utils python3 make g++ wget git
-RUN apt-get install -y chromium
-RUN apt-get install -y libc6-amd64 libc6-dev libc6-dbg
-# 输出信息
+RUN apt-get install -y curl tar xz-utils python3 make g++ wget git chromium
+RUN wget http://ftp.debian.org/debian/pool/main/g/glibc/libc6_2.39-4_arm64.deb
+RUN sudo dpkg -i libc6_2.39-4_arm64.deb
 RUN ldd --version
 
 # 安装 NodeJS 与 NPM
