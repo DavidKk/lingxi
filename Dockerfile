@@ -5,7 +5,7 @@ RUN apt-get update
 RUN apt-get upgrade -y
 RUN apt-get install -y curl tar xz-utils python3 make g++ wget git
 RUN apt-get install -y chromium
-RUN apt-get -t sid install libc6-amd64 libc6-dev libc6-dbg
+RUN apt-get install -y libc6-amd64 libc6-dev libc6-dbg
 
 # 安装 NodeJS 与 NPM
 RUN apt-get install -y nodejs npm
