@@ -1,19 +1,11 @@
-FROM debian:buster AS builder
+FROM debian:bookworm-slim AS builder
 
-# 安装必要的工具和依赖
+# 更新并初始化
 RUN apt-get update
 RUN apt-get upgrade -y
-RUN apt-get install -y curl tar xz-utils python3 make g++ wget build-essential git chromium
-RUN mkdir /glibc && cd /glibc
-RUN wget http://ftp.gnu.org/gnu/glibc/glibc-2.33.tar.gz
-RUN tar -xzvf glibc-2.33.tar.gz
-RUN cd glibc-2.33
-RUN mkdir build && cd build
-RUN ../configure --prefix=/usr
-RUN make -j$(nproc)
-RUN make install
+RUN apt-get install -y curl tar xz-utils python3 make g++ git chromium
 
-# 安装 NodeJS 与 NPM
+# # 安装 NodeJS 与 NPM
 RUN apt-get install -y nodejs npm
 
 # 安装 NodeJS 版本管理器
