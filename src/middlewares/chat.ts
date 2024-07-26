@@ -47,7 +47,7 @@ const mentionSelf: MessageMiddleware = async (ctx, next) => {
     return next()
   }
 
-  const mentionMessage = message.replace(/@(.+)\s+/gm, '').trim()
+  const mentionMessage = message.replace(/\@([^\s]+)/gim, '').trim()
   const content = await robot.chatWithGemini(ssid, user, mentionMessage)
   if (!content) {
     logger.warn('Mention me but no message to reply, skip.')
