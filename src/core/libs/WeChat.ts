@@ -97,9 +97,10 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
     const talker = messager.talker()
     const user = talker.name()
     const isSelf = talker.self()
+    const isStar = !!talker.star()
     const isRoom = !!room
     const ssid = room?.id || talker.id
-    const context = this.createContext({ ssid, isRoom, isSelf, user, message, messager })
+    const context = this.createContext({ ssid, isRoom, isSelf, isStar, user, message, messager })
     const { logger } = context
 
     if (!ssid) {
