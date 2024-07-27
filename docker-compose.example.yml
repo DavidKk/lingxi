@@ -2,13 +2,8 @@ version: '3.8'
 services:
   ai-assistant-wechat:
     container_name: ai-assistant-wechat
-    build:
-      context: .
-      dockerfile: ./Dockerfile
+    image: ghcr.io/davidkk/ai-assistant-wechat:latest
     volumes:
-      - path/to/libs:/ai-assistant-wechat/libs # option
-      - path/to/node_modules:/ai-assistant-wechat/node_modules # option
-      - path/to/package.json:/ai-assistant-wechat/package.json:rw # option
       - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
     environment:
       - NODE_ENV=production
