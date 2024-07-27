@@ -23,9 +23,15 @@ export function command({ command, description, reply }: CommandParams, handle: 
 
   const middleware = chat(
     (context) => {
-      const { message: content, logger } = context
+      const { isStar, message: content, logger } = context
       const trimAtMessage = clearAllAt(content)
+      if (!isStar) {
+        logger.debug('Not star, skip.')
+        return
+      }
+
       if (!trimAtMessage.startsWith(command)) {
+        logger.debug(`Not match command "${command}", skip.`)
         return
       }
 

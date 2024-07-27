@@ -21,6 +21,8 @@ export interface MessageContext extends Context {
   isRoom: boolean
   /** 是否为自己的信息 */
   isSelf: boolean
+  /** 是否为星标用户 */
+  isStar: boolean
   messager: MessageInterface
 }
 
