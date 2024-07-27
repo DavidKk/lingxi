@@ -1,4 +1,4 @@
-import { LimitedArray } from '@/libs/LimitedArray'
+import { LimitedArray } from '@/core/libs/LimitedArray'
 
 describe('LimitedArray', () => {
   test('should initialize with the correct capacity', () => {

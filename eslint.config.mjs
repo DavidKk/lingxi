@@ -4,7 +4,7 @@ import tsConfig from './eslintrc/ts.mjs'
 import cjsConfig from './eslintrc/cjs.mjs'
 import esmConfig from './eslintrc/esm.mjs'
 
-const ignores = ['.next/**/*', '.husky/**/*', 'coverage/**/*', 'libs/**/*', '__tests__/**/*', '__typetests__/**/*', 'node_modules']
+const ignores = ['.next/**/*', '.husky/**/*', 'coverage/**/*', 'libs/**/*', 'node_modules']
 
 export default [
   {

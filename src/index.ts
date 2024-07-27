@@ -1,8 +1,4 @@
-import { WeChat } from './libs/WeChat'
-import { qrcodeMiddleware } from './middlewares/qrcode'
-import { chatMiddleware } from './middlewares/chat'
+import { App } from './app'
 
-const app = new WeChat()
-app.use('qrcode', qrcodeMiddleware)
-app.use('message', chatMiddleware)
+const app = new App()
 app.start()
