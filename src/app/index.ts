@@ -41,9 +41,11 @@ export class App extends WeChat {
   protected async loadWebhoks() {
     const middlewares = await this.load<RequestMiddleware>(this.webhookDir)
     if (!middlewares.length) {
+      this.logger.warn(`no webhooks found from ${this.webhookDir}`)
       return
     }
 
+    this.logger.info(`load ${middlewares.length} webhooks`)
     const wechatyMiddleware = combineWechatyMiddlewares(...middlewares)
     this.apiServer.post('/webhook', wechatyMiddleware(this.wechaty))
   }
@@ -51,9 +53,11 @@ export class App extends WeChat {
   protected async loadMentions() {
     const middlewares = await this.load<MessageMiddleware>(this.mentionDir)
     if (!middlewares.length) {
+      this.logger.warn(`no mentions found from ${this.mentionDir}`)
       return
     }
 
+    this.logger.info(`load ${middlewares.length} mentions`)
     const mentionsMiddleware = combineChatMiddlewares(...middlewares)
     this.use('message', mentionsMiddleware(this.robot))
   }
@@ -61,9 +65,11 @@ export class App extends WeChat {
   protected async loadCommands() {
     const middlewares = await this.load<CommandMiddleware>(this.commandDir)
     if (!middlewares.length) {
+      this.logger.warn(`no commands found from ${this.commandDir}`)
       return
     }
 
+    this.logger.info(`load ${middlewares.length} commands`)
     const helpCommandMiddleware = this.help(middlewares)
     const commandMiddleware = combineChatMiddlewares(helpCommandMiddleware, ...middlewares)
     this.use('message', commandMiddleware(this.robot))
@@ -72,9 +78,11 @@ export class App extends WeChat {
   protected async loadQrcode() {
     const middlewares = await this.load<QrcodeMiddleware>(this.qrcodeDir)
     if (!middlewares.length) {
+      this.logger.warn(`no qrcodes found from ${this.qrcodeDir}`)
       return
     }
 
+    this.logger.info(`load ${middlewares.length} qrcodes`)
     const middleware = combineMiddlewares(...middlewares)
     this.use('qrcode', middleware)
   }
