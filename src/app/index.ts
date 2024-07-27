@@ -83,8 +83,14 @@ export class App extends WeChat {
     const commands = path.join(__dirname, folder)
     const files = await fs.promises.readdir(commands)
     const promises = files.map(async (file) => {
-      const { default: module } = await import(path.join(commands, file))
-      return module
+      if (file.endsWith('.d.ts')) {
+        return
+      }
+
+      if (file.endsWith('.js') || file.endsWith('.ts')) {
+        const { default: module } = await import(path.join(commands, file))
+        return module
+      }
     })
 
     const modules = await Promise.all(promises)
