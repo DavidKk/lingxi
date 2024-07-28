@@ -2,6 +2,7 @@ import axios from 'axios'
 import { SERVER_NAME, APPRISE_SERVER_URL } from '../constants/conf'
 import { createHeader } from '../utils/createHeader'
 import { Service, type ServiceOptions } from './Service'
+import { format } from '../utils/format'
 
 /** 信息格式 */
 export type AppriseMessageFormat = 'text' | 'markdown' | 'html'
@@ -29,7 +30,7 @@ export class Apprise extends Service {
     try {
       const body = { ...message, tag: [SERVER_NAME] }
       const headers = createHeader(body)
-      this.logger.info(`Send notify to apprise server. url: ${APPRISE_SERVER_URL}; headers: ${headers}; body: ${JSON.stringify(body, null, 2)}`)
+      this.logger.info(format(`Send notify to apprise server. url: ${APPRISE_SERVER_URL}; headers: %o; body: %o`, headers, body))
 
       await axios.post(APPRISE_SERVER_URL, body, { headers })
       this.logger.ok('Notify sent successfully')

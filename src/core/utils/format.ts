@@ -1,3 +1,5 @@
+import { stringifyElement } from './stringifyElement'
+
 export function format(format: string, ...args: any[]) {
   if (typeof format !== 'string') {
     throw new TypeError('Argument "format" must be a string')
@@ -17,7 +19,11 @@ export function format(format: string, ...args: any[]) {
         return JSON.stringify(arg)
       case '%o':
       case '%O':
-        return JSON.stringify(arg, null, 2)
+        return stringifyElement(arg, {
+          depth: 6,
+          maxArrayLength: 10,
+          maxStringLength: 20,
+        })
       default:
         return match
     }

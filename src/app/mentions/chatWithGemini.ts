@@ -1,9 +1,9 @@
 import { mention } from '@/core'
 
 export default mention(async (context) => {
-  const { ssid, user, message, logger, robot } = context
-  const content = await robot.chatWithGemini(context, ssid, user, message)
-  if (!message) {
+  const { logger, robot } = context
+  const content = await robot.chatWithGemini(context)
+  if (!content) {
     logger.warn('Mention me but no message to reply, skip.')
     return
   }

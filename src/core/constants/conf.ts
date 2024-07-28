@@ -9,7 +9,11 @@ export const SERVER_NAME = 'WeChatRobot'
 /** Apprise 服务地址 */
 export const APPRISE_SERVER_URL = `${process.env.APPRISE_SERVER_URL}`
 /** Gemini API 地址 */
-export const GEMINI_API_SERVER_URL = `${process.env.GEMINI_API_SERVER_URL}`
+export const GEMINI_API_SERVER_ENDPOINT = `${process.env.GEMINI_API_SERVER_ENDPOINT}`
+/** Gemini Pro 模型路径 */
+export const GEMINI_API_SERVER_CHAT_PATH = '/v1beta/models/gemini-pro:streamGenerateContent'
+/** Gemini Flash 模型路径 */
+export const GEMINI_API_SERVER_FLASH_PATH = '/v1beta/models/gemini-1.5-flash:generateContent'
 /** Gemini API 请求 TOKEN */
 export const GEMINI_API_TOKEN = `${process.env.GEMINI_API_TOKEN}`
 /** Gemini Vercel 秘钥 */

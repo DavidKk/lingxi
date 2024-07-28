@@ -1,7 +1,5 @@
-import type { MessageMiddleware } from '@/core/types'
-import { clearAllAt } from '../../utils/clearAllAt'
-import type { ChatHandle } from './chat'
-import { chat } from './chat'
+import { trimCommands, type MessageMiddleware } from '@/core'
+import { chat, type ChatHandle } from './chat'
 
 export type Command = `/${string}`
 
@@ -23,28 +21,23 @@ export function command({ command, description, reply }: CommandParams, handle: 
 
   const middleware = chat(
     (context) => {
-      const { isStar, message: content, logger } = context
-      const trimAtMessage = clearAllAt(content)
-      if (!isStar) {
-        logger.debug('Not star, skip.')
+      const { isStar, isSelf, content, logger } = context
+      if (!(isStar || isSelf)) {
+        logger.debug('Not star or not mention me, skip.')
         return
       }
 
-      if (!trimAtMessage.startsWith(command)) {
+      if (!content.startsWith(command)) {
         logger.debug(`Not match command "${command}", skip.`)
         return
       }
 
-      logger.info(`hit command "${command}"`)
-      const surplus = trimAtMessage.substring(command.length)
+      logger.info(`Hit command "${command}"`)
 
-      let message = ''
-      if (surplus.startsWith(' ')) {
-        message = surplus.substring(1)
-      }
+      const message = trimCommands(content, command)
+      logger.info(`Command content "${message}"`)
 
-      logger.info(`command content "${message}"`)
-      return handle({ ...context, message })
+      return handle({ ...context, content: message })
     },
     { reply }
   )

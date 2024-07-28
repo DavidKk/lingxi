@@ -1,14 +1,19 @@
-import { clearAllAt } from '../../utils/clearAllAt'
 import { chat, type ChatHandle } from './chat'
 
 export function mention(handle: ChatHandle) {
   return chat(async (context) => {
-    const { message, isRoom, messager } = context
-    if (!(!isRoom || (await messager.mentionSelf()))) {
+    const { content, isRoom, messager, logger } = context
+    if (!isRoom) {
+      logger.debug('Not a room, skip mention.')
       return
     }
 
-    const trimAtMessage = clearAllAt(message)
-    return handle({ ...context, message: trimAtMessage })
+    const mentionMe = await messager.mentionSelf()
+    if (!mentionMe) {
+      logger.debug('Not mention me, skip mention.')
+      return
+    }
+
+    return handle({ ...context, content })
   })
 }

@@ -15,7 +15,6 @@ export function chat(handle: ChatHandle, options?: ChatOptions): MessageMiddlewa
     return async function chatMiddleware(context, next) {
       const { messager, logger } = context
       const result = await handle({ ...context, robot })
-
       if (typeof result === 'undefined') {
         return next()
       }

@@ -1,8 +1,9 @@
 import fs from 'fs'
 import path from 'path'
-import { combineChatMiddlewares, WeChat, Robot, combineWechatyMiddlewares, combineMiddlewares, command } from '@/core'
+import { combineChatMiddlewares, WeChat, Robot, combineWechatyMiddlewares, combineMiddlewares, command, isTextMessageContext } from '@/core'
 import type { WeChatOptions, RobotOptions, MessageMiddleware, RequestMiddleware, QrcodeMiddleware, CommandMiddleware } from '@/core'
 import { DEFAULT_COMMANDS, DEFAULT_MENTIONS, DEFAULT_QRCODES, DEFAULT_WEBHOOKS } from './constants/conf'
+import { trimCommands } from '@/core/utils/trimCommands'
 
 export interface AppOptions extends WeChatOptions, RobotOptions {
   commands?: string
@@ -17,16 +18,20 @@ export class App extends WeChat {
   protected mentionDir: string
   protected webhookDir: string
   protected qrcodeDir: string
+  protected commands: string[]
 
   constructor(options?: AppOptions) {
     super(options)
 
     const { commands, mentions, webhooks, qrcodes } = options || {}
+
     this.commandDir = typeof commands === 'string' ? commands : DEFAULT_COMMANDS
     this.mentionDir = typeof mentions === 'string' ? mentions : DEFAULT_MENTIONS
     this.webhookDir = typeof webhooks === 'string' ? webhooks : DEFAULT_WEBHOOKS
     this.qrcodeDir = typeof qrcodes === 'string' ? qrcodes : DEFAULT_QRCODES
+
     this.robot = new Robot(options)
+    this.commands = []
   }
 
   public async start() {
@@ -45,7 +50,7 @@ export class App extends WeChat {
       return
     }
 
-    this.logger.info(`load ${middlewares.length} webhooks`)
+    this.logger.info(`Load ${middlewares.length} webhooks.`)
     const wechatyMiddleware = combineWechatyMiddlewares(...middlewares)
     this.apiServer.post('/webhook', wechatyMiddleware(this.wechaty))
   }
@@ -57,7 +62,7 @@ export class App extends WeChat {
       return
     }
 
-    this.logger.info(`load ${middlewares.length} mentions`)
+    this.logger.info(`Load ${middlewares.length} mentions.`)
     const mentionsMiddleware = combineChatMiddlewares(...middlewares)
     this.use('message', mentionsMiddleware(this.robot))
   }
@@ -69,10 +74,13 @@ export class App extends WeChat {
       return
     }
 
-    this.logger.info(`load ${middlewares.length} commands`)
+    this.logger.info(`Load ${middlewares.length} commands.`)
     const helpCommandMiddleware = this.help(middlewares)
-    const commandMiddleware = combineChatMiddlewares(helpCommandMiddleware, ...middlewares)
+    const commands = [helpCommandMiddleware, ...middlewares]
+    const commandMiddleware = combineChatMiddlewares(...commands)
     this.use('message', commandMiddleware(this.robot))
+
+    commands.forEach((module) => this.commands.push(module.command))
   }
 
   protected async loadQrcode() {
@@ -82,7 +90,7 @@ export class App extends WeChat {
       return
     }
 
-    this.logger.info(`load ${middlewares.length} qrcodes`)
+    this.logger.info(`Load ${middlewares.length} qrcodes.`)
     const middleware = combineMiddlewares(...middlewares)
     this.use('qrcode', middleware)
   }
@@ -107,9 +115,19 @@ export class App extends WeChat {
 
   protected saveChatHistory() {
     this.use('message', (context) => {
-      const { ssid, user, message } = context
-      this.robot.hear(context, ssid, user, message)
+      const { content } = context
+      if (isTextMessageContext(context)) {
+        const trimedCommandMessage = this.trimCommands(content)
+        this.robot.hear({ ...context, content: trimedCommandMessage })
+        return
+      }
+
+      this.robot.hear(context)
     })
+  }
+
+  protected trimCommands(message: string) {
+    return trimCommands(message, ...this.commands)
   }
 
   protected help(commands: CommandMiddleware[]) {

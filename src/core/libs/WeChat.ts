@@ -1,9 +1,13 @@
 import { WechatyBuilder, ScanStatus, type WechatyOptions } from 'wechaty'
+import * as PUPPET from 'wechaty-puppet'
 import type { ContactSelfInterface, MessageInterface, WechatyInterface } from 'wechaty/impls'
 import { Logger } from '../libs/Logger'
 import { MiddlewareCoordinator } from '../libs/MiddlewareCoordinator'
+import { format } from '../utils/format'
+import { stringifyBytes } from '../utils/stringifyBytes'
+import { isImageMessageContext } from '../utils/isImageMessageContext'
 import { WECHATY_DEFAULT_OPTIONS } from '../constants/conf'
-import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler } from '../types'
+import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '../types'
 import { Server, type ServerOptions } from './Server'
 import { ApiServer } from './ApiServer'
 
@@ -92,28 +96,43 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
 
   /** 处理聊天事件 */
   protected async handleMessage(messager: MessageInterface) {
-    const message = messager.text()
-    const room = messager.room()
-    const talker = messager.talker()
-    const user = talker.name()
-    const isSelf = talker.self()
-    const isStar = !!talker.star()
-    const isRoom = !!room
-    const ssid = room?.id || talker.id
-    const context = this.createContext({ ssid, isRoom, isSelf, isStar, user, message, messager })
+    const context = await this.createMessageContext(messager)
     const { logger } = context
+    if (!context.content) {
+      logger.debug('Message is empty, skip.')
+      return
+    }
 
+    if (isImageMessageContext(context)) {
+      await this.handleImageMessage(context)
+      return
+    }
+
+    this.handleTextMessage(context)
+  }
+
+  /** 处理图片信息 */
+  protected async handleImageMessage(context: ImageMessageContext) {
+    const { user, fileSize, logger } = context
+
+    logger.info(`Received image message by "${user}". size: ${stringifyBytes(fileSize)}.`)
+    this.middlewares.message.execute(context)
+  }
+
+  /** 处理文字信息 */
+  protected handleTextMessage(context: TextMessageContext) {
+    const { ssid, user, content, logger } = context
     if (!ssid) {
       logger.debug('Ssid does not exist, skip.')
       return
     }
 
-    if (!message) {
+    if (!content) {
       logger.debug('Message is empty, skip.')
       return
     }
 
-    logger.info(`Received message is ${message} by ${user}(${ssid}).`)
+    logger.info(`Received message "${content}" by "${user}".`)
     this.middlewares.message.execute(context)
   }
 
@@ -167,13 +186,13 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
 
   /** 处理错误事件 */
   protected handleError(error: Error) {
-    this.logger.fail(`Some errors occurred in Wechaty\n${error}`, { verbose: false })
+    this.logger.fail(`Some errors occurred in Wechaty\n${error}.`, { verbose: false })
   }
 
   /** 处理心跳事件 */
   protected async handleHeartBeat() {
     const status = this.status
-    this.logger.debug(`ping wechat. status: ${JSON.stringify(this.status)}`)
+    this.logger.debug(format(`Ping wechat. status: %j.`, this.status))
 
     if (status.started && !status.logined && !status.loginning) {
       this._isScanQrcode = false
@@ -185,5 +204,41 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
   protected listen<E extends EventType>(event: E, handler: EventHandler[E]) {
     this.wechaty.on(event, handler)
     return () => this.wechaty.off(event, handler)
+  }
+
+  protected async createMessageContext(messager: MessageInterface): Promise<MessageContext> {
+    const room = messager.room()
+    const talker = messager.talker()
+    const messageType = messager.type()
+    const user = talker.name()
+    const isSelf = talker.self()
+    const isStar = !!talker.star()
+    const isRoom = !!room
+    const ssid = room?.id || talker.id
+    const logger = this.logger
+    const meta = { ssid, user, isRoom, isSelf, isStar, messager, logger }
+
+    if (messageType === PUPPET.types.Message.Image) {
+      logger.debug('Received image message.')
+      const context = await this.createImageContext(messager)
+      return { ...meta, ...context } as ImageMessageContext
+    }
+
+    logger.debug('Received text message.')
+    const context = await this.createTextContext(messager)
+    return { ...meta, ...context } as TextMessageContext
+  }
+
+  protected async createImageContext(messager: MessageInterface) {
+    const image = await messager.toFileBox()
+    const mimeType = image.mediaType
+    const fileSize = image.size
+    const content = await image.toBase64()
+    return { isImageMessage: true, mimeType, fileSize, content }
+  }
+
+  protected async createTextContext(messager: MessageInterface) {
+    const content = await messager.mentionText()
+    return { isTextMessage: true, content }
   }
 }
