@@ -6,7 +6,7 @@ import { MiddlewareCoordinator } from '../libs/MiddlewareCoordinator'
 import { format } from '../utils/format'
 import { stringifyBytes } from '../utils/stringifyBytes'
 import { isImageMessageContext } from '../utils/isImageMessageContext'
-import { WECHATY_DEFAULT_OPTIONS } from '../constants/conf'
+import { MAX_FILE_SIZE, WECHATY_DEFAULT_OPTIONS } from '../constants/conf'
 import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '../types'
 import { Server, type ServerOptions } from './Server'
 import { ApiServer } from './ApiServer'
@@ -97,6 +97,11 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
   /** 处理聊天事件 */
   protected async handleMessage(messager: MessageInterface) {
     const context = await this.createMessageContext(messager)
+    if (!context) {
+      this.logger.debug('Message context is empty, skip.')
+      return
+    }
+
     const { logger } = context
     if (!context.content) {
       logger.debug('Message is empty, skip.')
@@ -206,7 +211,7 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
     return () => this.wechaty.off(event, handler)
   }
 
-  protected async createMessageContext(messager: MessageInterface): Promise<MessageContext> {
+  protected async createMessageContext(messager: MessageInterface): Promise<MessageContext | null> {
     const room = messager.room()
     const talker = messager.talker()
     const messageType = messager.type()
@@ -221,6 +226,11 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
     if (messageType === PUPPET.types.Message.Image) {
       logger.debug('Received image message.')
       const context = await this.createImageContext(messager)
+      if (!context) {
+        logger.warn('Image size is too large, skip.')
+        return null
+      }
+
       return { ...meta, ...context } as ImageMessageContext
     }
 
@@ -233,6 +243,10 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
     const image = await messager.toFileBox()
     const mimeType = image.mediaType
     const fileSize = image.size
+    if (fileSize > MAX_FILE_SIZE) {
+      return false
+    }
+
     const content = await image.toBase64()
     return { isImageMessage: true, mimeType, fileSize, content }
   }

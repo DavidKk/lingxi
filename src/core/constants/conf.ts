@@ -1,6 +1,6 @@
 import dotenv from 'dotenv'
 import type { WechatyOptions } from 'wechaty'
-import type { GeminiGenerationConfig, GeminiSafetySettings } from '@/core/types'
+import { M } from './size'
 
 dotenv.config()
 
@@ -22,7 +22,8 @@ export const GEMINI_VERCEL_SECRET = `${process.env.GEMINI_VERCEL_SECRET}`
 export const MAX_HISTORY_RECORD = 200
 /** 发送聊天记录数 */
 export const CHAT_SEND_RECORD_COUNT = 20
-
+/** 允许最大图片大小 */
+export const MAX_FILE_SIZE = 3 * M
 /** wechaty 默认配置 */
 export const WECHATY_DEFAULT_OPTIONS: WechatyOptions = {
   name: SERVER_NAME,
@@ -31,28 +32,3 @@ export const WECHATY_DEFAULT_OPTIONS: WechatyOptions = {
     uos: true,
   },
 }
-
-export const GenerationConfig: GeminiGenerationConfig = {
-  temperature: 0.5,
-  topP: 1,
-  maxOutputTokens: 4000,
-}
-
-export const SafetySettings: GeminiSafetySettings[] = [
-  {
-    category: 'HARM_CATEGORY_HARASSMENT',
-    threshold: 'BLOCK_ONLY_HIGH',
-  },
-  {
-    category: 'HARM_CATEGORY_HATE_SPEECH',
-    threshold: 'BLOCK_ONLY_HIGH',
-  },
-  {
-    category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT',
-    threshold: 'BLOCK_ONLY_HIGH',
-  },
-  {
-    category: 'HARM_CATEGORY_DANGEROUS_CONTENT',
-    threshold: 'BLOCK_ONLY_HIGH',
-  },
-]
