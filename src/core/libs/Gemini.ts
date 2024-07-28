@@ -1,18 +1,43 @@
 import type { ReadableStreamDefaultReader } from 'stream/web'
 import { Service } from '../libs/Service'
-import type { HistoryRecord } from '../libs/History'
+import type { HistoryImageContent, HistoryRecord, HistoryRole } from '../libs/History'
 import { withVercelHeader } from '../utils/withVercelHeader'
-import { GEMINI_API_SERVER_URL, GEMINI_API_TOKEN, GenerationConfig, SafetySettings } from '../constants/conf'
+import { GEMINI_API_SERVER_CHAT_PATH, GEMINI_API_SERVER_ENDPOINT, GEMINI_API_SERVER_FLASH_PATH, GEMINI_API_TOKEN, GenerationConfig, SafetySettings } from '../constants/conf'
 import type { GeminiContent, GeminiMessageDTO, GeminiRespDTO, MessageContext } from '../types'
+import { format } from '../utils/format'
 
 export interface ReadStreamOptions {
   /** 分段更新 */
   onSegmentUpdate: (segmentText: string, receivedText: string) => void
 }
 
+export type GeminiChatModel = 'gemini-pro' | 'gemini-1.5-flash'
+
+export function exchangeModelPath(model: GeminiChatModel) {
+  switch (model) {
+    case 'gemini-pro':
+      return GEMINI_API_SERVER_CHAT_PATH
+    case 'gemini-1.5-flash':
+      return GEMINI_API_SERVER_FLASH_PATH
+  }
+}
+
+export interface GeminiChatOptions {
+  /** 模型类型 */
+  model?: GeminiChatModel
+}
+
 export class Gemini extends Service {
-  public async chat(context: MessageContext, contents: GeminiContent[]) {
+  public async chat(context: MessageContext, contents: GeminiContent[], options?: GeminiChatOptions) {
     const { logger } = context
+    if (!(Array.isArray(contents) && contents.length > 0)) {
+      throw new Error('Contents is empty')
+    }
+
+    const { model = 'gemini-pro' } = options || {}
+    logger.info(`Chat with Gemini. model: ${model}`)
+
+    const modelPath = exchangeModelPath(model)
     const payload = this.integrateRequestPayload(contents)
     const headers = new Headers([
       ['Content-Type', 'application/json'],
@@ -23,10 +48,12 @@ export class Gemini extends Service {
 
     withVercelHeader(headers)
 
-    const url = `${GEMINI_API_SERVER_URL}?key=${GEMINI_API_TOKEN}`
-    const body = JSON.stringify(payload)
+    const url = `${GEMINI_API_SERVER_ENDPOINT}${modelPath}?key=${GEMINI_API_TOKEN}`
+    logger.info(`Chat with Gemini. url: ${url}`)
 
-    logger.info(`Chat with Gemini. contents: ${JSON.stringify(payload.contents, null, 2)}`)
+    const body = JSON.stringify(payload)
+    logger.info(format(`Chat with Gemini. contents: %o`, payload.contents))
+
     const response = await fetch(url, { method: 'POST', headers, body })
     if (!(200 <= response.status && response.status < 400)) {
       throw new Error(`Chat with Gemini failed with status: ${response.status}`)
@@ -43,29 +70,13 @@ export class Gemini extends Service {
       },
     })
 
-    logger.info(`Chat with Gemini success: ${text}`)
+    if (text) {
+      logger.info(`Chat with Gemini success. content: ${text}`)
+    } else {
+      logger.warn('Chat with Gemini failed.')
+    }
+
     return text
-  }
-
-  public convertRecordsToContents(records: HistoryRecord[]): GeminiContent[] {
-    return Array.from(
-      (function* () {
-        for (const record of records) {
-          const { role, message: text } = record
-          const part = { text }
-          const parts = [part]
-
-          switch (role) {
-            case 'system':
-              yield { role: 'model', parts }
-              continue
-            case 'human':
-              yield { role: 'user', parts }
-              continue
-          }
-        }
-      })()
-    )
   }
 
   /** 逐步解析数据 */
@@ -81,7 +92,7 @@ export class Gemini extends Service {
     while (true) {
       const { done, value } = await reader?.read()
       if (done) {
-        logger.info('Stream reading completed.')
+        logger.info(`Stream reading completed. conetent: ${partialData}`)
         break
       }
 
@@ -94,6 +105,8 @@ export class Gemini extends Service {
         logger.debug('No data found.')
         continue
       }
+
+      logger.info(`Partial data: ${textArray}`)
 
       if (textArray.length > existingTexts.length) {
         const deltaArray = textArray.slice(existingTexts.length)
@@ -125,11 +138,20 @@ export class Gemini extends Service {
       return
     }
 
+    // Gemini Flash
+    if (typeof repsonse === 'object' && 'candidates' in repsonse) {
+      const data: GeminiMessageDTO = repsonse
+      const contents = this.extractText(context, [data])
+
+      logger.info(format(`Extract contents: %o`, contents))
+      return contents
+    }
+
     if (Array.isArray(repsonse)) {
       const data: GeminiMessageDTO[] = repsonse
       const contents = this.extractText(context, data)
 
-      logger.info(`Extract contents: ${JSON.stringify(contents, null, 2)}`)
+      logger.info(format(`Extract contents: %o`, contents))
       return contents
     }
 
@@ -178,7 +200,8 @@ export class Gemini extends Service {
           for (const candidate of candidates) {
             const content = candidate.content || {}
             const parts = content?.parts || []
-            yield parts.map(({ text }) => text).join('')
+            const textParts = parts.filter((item) => 'text' in item)
+            yield textParts.map(({ text }) => text).join('')
           }
         }
       })()
@@ -218,5 +241,47 @@ export class Gemini extends Service {
     }
 
     return null
+  }
+}
+
+export function convertRecordsToContents(records: HistoryRecord[]): GeminiContent[] {
+  return Array.from(
+    (function* () {
+      for (const record of records) {
+        const { role: hRole, type, content } = record
+        if (type === 'image' && typeof content === 'object') {
+          const part = convertImageToContentPart(content)
+          const parts = [part]
+          const role = convertRoleToContentRole(hRole)
+          yield { role, parts }
+        }
+
+        if (type === 'text' && typeof content === 'string') {
+          const part = convertTextToContentPart(content)
+          const parts = [part]
+          const role = convertRoleToContentRole(hRole)
+          yield { role, parts }
+        }
+      }
+    })()
+  )
+}
+
+export function convertImageToContentPart(content: HistoryImageContent) {
+  const { mimeType, data } = content
+  const inlineData = { mimeType, data }
+  return { inlineData }
+}
+
+export function convertTextToContentPart(content: string) {
+  return { text: content }
+}
+
+export function convertRoleToContentRole(role: HistoryRole) {
+  switch (role) {
+    case 'system':
+      return 'model'
+    case 'human':
+      return 'user'
   }
 }

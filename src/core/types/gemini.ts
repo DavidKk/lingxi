@@ -1,10 +1,23 @@
-export interface GeminiContentPart {
+export interface GeminiTextContentPart {
   text: string
 }
 
+export interface GeminiImageContentPartBlob {
+  /** Mime type of the image, e.g. "image/png" */
+  mimeType: string
+  /** Image as a base64 string */
+  data: string
+}
+
+export interface GeminiImageContentPart {
+  inlineData: GeminiImageContentPartBlob
+}
+
+export type GeminiContentRole = 'user' | 'model' | 'system'
+
 export interface GeminiContent {
-  role: 'user' | 'model' | 'system'
-  parts: GeminiContentPart[]
+  role: GeminiContentRole
+  parts: (GeminiTextContentPart | GeminiImageContentPart)[]
 }
 
 export interface GeminiGenerationConfig {
@@ -68,4 +81,4 @@ export interface GeminiFailedDTO {
 }
 
 /** 返回体 */
-export type GeminiRespDTO = GeminiMessageDTO[] | GeminiExceptionDTO | GeminiFailedDTO
+export type GeminiRespDTO = GeminiMessageDTO | GeminiMessageDTO[] | GeminiExceptionDTO | GeminiFailedDTO

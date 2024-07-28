@@ -1,10 +1,11 @@
 import http from 'http'
 import { NotFound } from '../constants/message'
+import { format } from '../utils/format'
 import { done } from '../utils/done'
+import { DEFAULT_API_PORT } from '../constants/server'
 import type { ApiRequest, ApiResponse, RequestContext, WebhookMiddlewareRegistry } from '../types'
 import { Server, type ServerOptions } from './Server'
 import { MiddlewareCoordinator, type Middleware } from './MiddlewareCoordinator'
-import { DEFAULT_API_PORT } from '../constants/server'
 
 export interface ApiServerOptions extends ServerOptions {
   port?: number
@@ -94,7 +95,7 @@ export class ApiServer extends Server<WebhookMiddlewareRegistry> {
 
     req.on('end', async () => {
       const data = this.tryParseJson(body)
-      logger.info(`Request body: ${JSON.stringify(data, null, 2)}`)
+      logger.info(format(`Request body: %o`, data))
 
       const withDataContext = this.createContext({ ...context, data })
       await this.execMiddleware(withDataContext)

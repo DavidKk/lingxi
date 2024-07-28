@@ -7,21 +7,15 @@ export default command(
     description: 'debug chat with Gemini.',
   },
   async (context) => {
-    const { ssid, user, isSelf, message, logger, robot } = context
-    if (!message.startsWith('debug')) {
-      return
-    }
-
+    const { isSelf, logger, robot } = context
     if (!isSelf) {
-      logger.warn('Received debug message but not self, skip.')
+      logger.debug('Received debug message but not self, skip.')
       return
     }
 
-    const debugMessage = message.replace(/^debug/, '').trim()
-    const content = await robot.chatWithGemini(context, ssid, user, debugMessage)
-
+    const content = await robot.chatWithGemini(context)
     if (!content) {
-      logger.warn('Debug chat but no message to reply, skip.')
+      logger.debug('Debug chat but no message to reply, skip.')
       return
     }
 

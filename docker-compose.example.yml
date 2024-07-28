@@ -11,7 +11,7 @@ services:
       # Apprise 服务地址
       - APPRISE_SERVER_URL=
       # Gemini API 地址
-      - GEMINI_API_SERVER_URL=
+      - GEMINI_API_SERVER_ENDPOINT=
       # Gemini API 请求 TOKEN
       - GEMINI_API_TOKEN=
       # Gemini Vercel 秘钥

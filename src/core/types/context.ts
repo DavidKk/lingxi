@@ -6,7 +6,7 @@ export interface Context {
   logger: Logger
 }
 
-export interface MessageContext extends Context {
+export interface BasicMessageContext extends Context {
   /**
    * 频道号
    * @description
@@ -15,16 +15,35 @@ export interface MessageContext extends Context {
   ssid: string
   /** 发言用户 */
   user: string
-  /** 内容 */
-  message: string
   /** 是否为群聊 */
   isRoom: boolean
   /** 是否为自己的信息 */
   isSelf: boolean
   /** 是否为星标用户 */
   isStar: boolean
+  /** 信息对象 */
   messager: MessageInterface
 }
+
+export interface ImageMessageContext extends BasicMessageContext {
+  /** 是否为图片类型 */
+  isImageMessage: boolean
+  /** 文件类型 */
+  mimeType: string
+  /** 文件大小 */
+  fileSize: number
+  /** 内容 */
+  content: string
+}
+
+export interface TextMessageContext extends BasicMessageContext {
+  /** 是否为文本类型 */
+  isTextMessage: boolean
+  /** 内容 */
+  content: string
+}
+
+export type MessageContext = ImageMessageContext | TextMessageContext
 
 export interface QrcodeContext extends Context {
   qrcode: string
