@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 import { combineChatMiddlewares, WeChat, Robot, combineWechatyMiddlewares, combineMiddlewares, command, isTextMessageContext } from '@/core'
 import type { WeChatOptions, RobotOptions, MessageMiddleware, RequestMiddleware, QrcodeMiddleware, CommandMiddleware } from '@/core'
-import { DEFAULT_COMMANDS, DEFAULT_MENTIONS, DEFAULT_QRCODES, DEFAULT_WEBHOOKS } from './constants/conf'
+import { DEFAULT_COMMANDS_DIR, DEFAULT_MENTIONS_DIR, DEFAULT_QRCODES_DIR, DEFAULT_WEBHOOKS_DIR, WEBHOOK_BASE_PATH } from './constants/conf'
 import { trimCommands } from '@/core/utils/trimCommands'
 
 export interface AppOptions extends WeChatOptions, RobotOptions {
@@ -25,10 +25,10 @@ export class App extends WeChat {
 
     const { commands, mentions, webhooks, qrcodes } = options || {}
 
-    this.commandDir = typeof commands === 'string' ? commands : DEFAULT_COMMANDS
-    this.mentionDir = typeof mentions === 'string' ? mentions : DEFAULT_MENTIONS
-    this.webhookDir = typeof webhooks === 'string' ? webhooks : DEFAULT_WEBHOOKS
-    this.qrcodeDir = typeof qrcodes === 'string' ? qrcodes : DEFAULT_QRCODES
+    this.commandDir = typeof commands === 'string' ? commands : DEFAULT_COMMANDS_DIR
+    this.mentionDir = typeof mentions === 'string' ? mentions : DEFAULT_MENTIONS_DIR
+    this.webhookDir = typeof webhooks === 'string' ? webhooks : DEFAULT_WEBHOOKS_DIR
+    this.qrcodeDir = typeof qrcodes === 'string' ? qrcodes : DEFAULT_QRCODES_DIR
 
     this.robot = new Robot(options)
     this.commands = []
@@ -52,7 +52,7 @@ export class App extends WeChat {
 
     this.logger.info(`Load ${middlewares.length} webhooks.`)
     const wechatyMiddleware = combineWechatyMiddlewares(...middlewares)
-    this.apiServer.post('/webhook', wechatyMiddleware(this.wechaty))
+    this.apiServer.post(WEBHOOK_BASE_PATH, wechatyMiddleware(this.wechaty))
   }
 
   protected async loadMentions() {
