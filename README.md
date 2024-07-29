@@ -2,6 +2,17 @@
 
 基于 Wechaty 开发，打通微信。
 
+## Docker 部署
+
+参考 `docker-compose.example.yml` 文件。
+
+## 本地运行
+
+```bash
+$ pnpm i
+$ pnpm dev
+```
+
 ## Gemini
 
 ### 环境变量 (ENV)
@@ -27,7 +38,7 @@
 微信登录需要扫描二维码，通过配置 Apprise，可以将登录信息统一发送到邮件中。
 
 参考 [Apprise 配置](https://github.com/caronc/apprise?tab=readme-ov-file#productivity-based-notifications)
-
+k
 ## Webhook
 
 主要用于打通其他服务的消息通知。
