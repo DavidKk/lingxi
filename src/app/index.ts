@@ -74,13 +74,14 @@ export class App extends WeChat {
       return
     }
 
-    this.logger.info(`Load ${middlewares.length} commands.`)
     const helpCommandMiddleware = this.help(middlewares)
     const commands = [helpCommandMiddleware, ...middlewares]
+
     const commandMiddleware = combineChatMiddlewares(...commands)
     this.use('message', commandMiddleware(this.robot))
 
     commands.forEach((module) => this.commands.push(module.command))
+    this.logger.info(`Load ${commands.length} commands.`)
   }
 
   protected async loadQrcode() {

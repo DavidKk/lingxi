@@ -56,6 +56,10 @@ export class Gemini extends Service {
     logger.info(format(`Chat with Gemini. contents: %o`, payload.contents))
 
     const response = await fetch(url, { method: 'POST', headers, body })
+    if (!response.ok) {
+      throw new Error(`Chat with Gemini failed with status: ${response.status}`)
+    }
+
     if (!(200 <= response.status && response.status < 400)) {
       throw new Error(`Chat with Gemini failed with status: ${response.status}`)
     }

@@ -65,4 +65,22 @@ export class History {
 
     return this.records[ssid].slice(start, end)
   }
+
+  /** 清除聊天记录 */
+  public clear(ssid: string) {
+    if (!this.records[ssid]) {
+      this.records[ssid] = new LimitedArray(this.maxSize)
+    }
+
+    this.records[ssid].clear()
+  }
+
+  /** 更新最大聊天记录条数 */
+  public updateCapacity(ssid: string, maxSize: number) {
+    if (!this.records[ssid]) {
+      this.records[ssid] = new LimitedArray(this.maxSize)
+    }
+
+    this.records[ssid].updateCapacity(maxSize)
+  }
 }

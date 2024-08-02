@@ -1,5 +1,8 @@
-import { trimCommands, type MessageMiddleware } from '@/core'
-import { chat, type ChatHandle } from './chat'
+import { Logger, trimCommands, type MessageMiddleware } from '@/core'
+import { chat } from './chat'
+import type { ChatHandleResult, ChatHandle } from './chat'
+import { OK } from '@/core/constants/response'
+import { modifyValue } from '@/core/utils/modifyValue'
 
 export type Command = `/${string}`
 
@@ -14,16 +17,20 @@ export interface CommandParams {
   reply?: boolean
 }
 
-export function command({ command, description, reply }: CommandParams, handle: ChatHandle): CommandMiddleware {
+const logger = new Logger({ showTime: true })
+
+export function command({ command, description, reply }: CommandParams, handle: ChatHandle<true | ChatHandleResult>): CommandMiddleware {
   if (command.charAt(0) !== '/') {
     throw new Error('Command name must start with "/"')
   }
+
+  logger.info(`Register command "<Bold:${command}>"`)
 
   const middleware = chat(
     (context) => {
       const { isStar, isSelf, content, logger } = context
       if (!(isStar || isSelf)) {
-        logger.debug('Not star or not mention me, skip.')
+        logger.debug('Not star or not self, skip.')
         return
       }
 
@@ -37,7 +44,8 @@ export function command({ command, description, reply }: CommandParams, handle: 
       const message = trimCommands(content, command)
       logger.info(`Command content "${message}"`)
 
-      return handle({ ...context, content: message })
+      const response = handle({ ...context, content: message })
+      return modifyValue(response, (res) => (res === true ? OK : res))
     },
     { reply }
   )
