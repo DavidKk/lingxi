@@ -29,6 +29,7 @@
     "chalk": "^4.0.0",
     "dotenv": "^16.4.5",
     "lodash": "^4.17.21",
+    "memfs": "^4.11.1",
     "pretty-error": "^4.0.0",
     "qrcode": "^1.5.3",
     "qrcode-terminal": "^0.12.0",
