@@ -1,5 +1,5 @@
 import http from 'http'
-import { NotFound } from '../constants/message'
+import { NotFound } from '../constants/response'
 import { format } from '../utils/format'
 import { done } from '../utils/done'
 import { DEFAULT_API_PORT } from '../constants/server'

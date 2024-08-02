@@ -1,9 +1,13 @@
+import { OK } from '@/core/constants/response'
 import type { Robot } from '../../libs/Robot'
+import { splitString } from '../../utils/splitString'
+import { executePromisesSequentially } from '../../utils/executePromisesSequentially'
+import { MAX_BYTES_SIZE } from '../../constants/wechaty'
 import type { MessageContext, MessageMiddleware } from '../../types'
 
 export type ChatContext = MessageContext & { robot: Robot }
 export type ChatHandleResult = string | false | undefined
-export type ChatHandle = (context: ChatContext) => Promise<ChatHandleResult> | ChatHandleResult
+export type ChatHandle<T = ChatHandleResult> = (context: ChatContext) => Promise<T> | T
 
 export interface ChatOptions {
   reply?: boolean
@@ -13,7 +17,12 @@ export function chat(handle: ChatHandle, options?: ChatOptions): MessageMiddlewa
   const { reply: shouldReply = false } = options || {}
   return function chatMiddlewareFactory(robot) {
     return async function chatMiddleware(context, next) {
-      const { messager, logger } = context
+      const { content, messager, logger } = context
+      if (content === OK) {
+        logger.warn(`Content is similar to machine generated, ignore. contnet: ${content}`)
+        return
+      }
+
       const result = await handle({ ...context, robot })
       if (typeof result === 'undefined') {
         return next()
@@ -25,6 +34,7 @@ export function chat(handle: ChatHandle, options?: ChatOptions): MessageMiddlewa
       }
 
       logger.info(`Reply message. message: ${result}`)
+      const messages = splitString(result, MAX_BYTES_SIZE)
 
       let replied = false
       if (shouldReply) {
@@ -38,12 +48,15 @@ export function chat(handle: ChatHandle, options?: ChatOptions): MessageMiddlewa
 
           if (member) {
             replied = true
-            await room.say(result, member)
+            const chats = messages.map((message) => () => room.say(message, member))
+            await executePromisesSequentially(...chats)
           }
         }
       }
 
-      replied === false && (await messager.say(result))
+      const chats = messages.map((message) => () => messager.say(message))
+      replied === false && (await executePromisesSequentially(...chats))
+
       logger.ok(`Reply message success.`)
     }
   }

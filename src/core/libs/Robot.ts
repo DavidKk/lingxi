@@ -80,4 +80,18 @@ export class Robot extends Service {
     this.history.push(ssid, { role: 'system', type: 'text', user, content: replyText })
     return replyText
   }
+
+  /** 清除聊天记录上下文 */
+  public clear(context: MessageContext) {
+    const { ssid } = context
+    this.history.clear(ssid)
+    this.logger.ok(`Clear history records.`)
+  }
+
+  /** 更新聊天记录容量 */
+  public updateCapacity(context: MessageContext, size: number) {
+    const { ssid } = context
+    this.history.updateCapacity(ssid, size)
+    this.logger.ok(`Update history capacity to ${size}.`)
+  }
 }

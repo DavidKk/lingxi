@@ -34,4 +34,16 @@ export class LimitedArray<T> {
   public values(): T[] {
     return [...this.array]
   }
+
+  /** 更新容量 */
+  public updateCapacity(capacity: number) {
+    if (typeof capacity === 'number' && capacity > 1) {
+      this.capacity = capacity
+    }
+  }
+
+  /** 清除 */
+  public clear() {
+    this.array = []
+  }
 }

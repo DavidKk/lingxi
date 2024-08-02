@@ -25,6 +25,6 @@ export * from './utils/isTextMessageContext'
 export * from './utils/isImageMessage'
 
 export * from './constants/conf'
-export * from './constants/message'
+export * from './constants/response'
 
 export type * from './types'

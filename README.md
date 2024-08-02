@@ -39,6 +39,7 @@ $ pnpm dev
 
 参考 [Apprise 配置](https://github.com/caronc/apprise?tab=readme-ov-file#productivity-based-notifications)
 k
+
 ## Webhook
 
 主要用于打通其他服务的消息通知。
@@ -52,11 +53,11 @@ http://127.0.0.1:3000/webhook
 
 ### 参数
 
-| 参数    | 类型      | 是否可选 | 描述                     |
-|---------|-----------|----------|--------------------------|
-| star    | boolean   | 是       | 是否 starred              |
-| alias   | string    | 是       | 别名                     |
-| message | string    | 否       | 消息内容                 |
+| 参数    | 类型    | 是否可选 | 描述         |
+| ------- | ------- | -------- | ------------ |
+| star    | boolean | 是       | 是否 starred |
+| alias   | string  | 是       | 别名         |
+| message | string  | 否       | 消息内容     |
 
 ### 示例
 
@@ -66,3 +67,4 @@ $ curl "http://$YOU_SERVER_HOST:$PORT/webhook" \
   -H 'cache-control: no-cache' \
   --data-raw '{"star":true,"message":"Hello World"}' \
   --compressed
+```
