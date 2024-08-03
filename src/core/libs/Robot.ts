@@ -5,7 +5,7 @@ import { format } from '@/core/utils/format'
 import { stringifyLength } from '@/core/utils/stringifyLength'
 import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '@/core/constants/conf'
 import type { MessageContext } from '@/core/types'
-import { isImageMessage, isImageMessageContext, isTextMessageContext } from '../services/wechaty'
+import { isImageMessage, isImageMessageContext, isTextMessageContext } from '../utils/wechaty'
 
 export type RobotOptions = ServiceOptions
 

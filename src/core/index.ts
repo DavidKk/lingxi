@@ -14,15 +14,14 @@ export * from './libs/WeChat'
 export * from './register/wechaty'
 export * from './register/http'
 
-export * from './services/http'
-export * from './services/wechaty'
-
 export * from './utils/trimCommands'
 export * from './utils/combineMiddlewares'
 export * from './utils/createHeader'
 export * from './utils/format'
 export * from './utils/stringifyDatetime'
 export * from './utils/withVercelHeader'
+export * from './utils/http'
+export * from './utils/wechaty'
 
 export * from './constants/conf'
 export * from './constants/response'

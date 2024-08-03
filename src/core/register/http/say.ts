@@ -1,7 +1,7 @@
-import { done } from '@/core/services/http'
 import type { RequestContext } from '@/core/types'
 import type { RequestMiddleware } from '@/core/types/middleware'
 import type { ContactInterface, WechatyInterface } from 'wechaty/impls'
+import { done } from '@/core/utils/http'
 
 export interface SayPayload {
   star: boolean

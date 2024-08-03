@@ -2,7 +2,7 @@ import type { FileBox } from 'file-box'
 import { OK } from '@/core/constants/response'
 import type { Robot } from '@/core/libs/Robot'
 import type { MessageContext, MessageMiddleware } from '@/core/types'
-import { isFileBox, replyText, sendFile, sendText } from '@/core/services/wechaty'
+import { isFileBox, replyText, sendFile, sendText } from '@/core/utils/wechaty'
 
 export type ChatContext = MessageContext & { robot: Robot }
 export type ChatHandleResult = string | FileBox | FileBox[] | false | undefined
