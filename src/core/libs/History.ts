@@ -1,4 +1,4 @@
-import { MAX_HISTORY_RECORD } from '../constants/conf'
+import { MAX_HISTORY_RECORD } from '@/core/constants/conf'
 import { LimitedArray } from './LimitedArray'
 
 /** 历史记录角色 */

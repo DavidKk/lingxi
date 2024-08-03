@@ -1,4 +1,4 @@
-import { GEMINI_VERCEL_SECRET } from '../constants/conf'
+import { GEMINI_VERCEL_SECRET } from '@/core/constants/conf'
 
 export function withVercelHeader(headers: Headers) {
   if (GEMINI_VERCEL_SECRET) {

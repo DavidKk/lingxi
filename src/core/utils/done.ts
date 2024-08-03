@@ -1,4 +1,4 @@
-import type { RequestContext } from '../types'
+import type { RequestContext } from '@/core/types'
 
 export function done(context: RequestContext, status: number, message: string) {
   const { res } = context

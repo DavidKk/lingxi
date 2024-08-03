@@ -1,6 +1,6 @@
-import type { RequestContext } from '../../types'
-import type { RequestMiddleware } from '../../types/middleware'
-import { done } from '../../utils/done'
+import type { RequestContext } from '@/core/types'
+import type { RequestMiddleware } from '@/core/types/middleware'
+import { done } from '@/core/utils/done'
 import type { ContactInterface, WechatyInterface } from 'wechaty/impls'
 
 export interface SayPayload {

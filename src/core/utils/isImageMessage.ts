@@ -1,4 +1,4 @@
-import type { GeminiContent } from '../types'
+import type { GeminiContent } from '@/core/types'
 
 export function isImageMessage(contents: GeminiContent[]) {
   for (const content of contents) {

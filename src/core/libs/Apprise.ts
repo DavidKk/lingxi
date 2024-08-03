@@ -1,8 +1,8 @@
 import axios from 'axios'
-import { SERVER_NAME, APPRISE_SERVER_URL } from '../constants/conf'
-import { createHeader } from '../utils/createHeader'
+import { SERVER_NAME, APPRISE_SERVER_URL } from '@/core/constants/conf'
+import { createHeader } from '@/core/utils/createHeader'
 import { Service, type ServiceOptions } from './Service'
-import { format } from '../utils/format'
+import { format } from '@/core/utils/format'
 
 /** 信息格式 */
 export type AppriseMessageFormat = 'text' | 'markdown' | 'html'

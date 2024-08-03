@@ -1,6 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { MessageInterface } from 'wechaty/impls'
-import type { Logger } from '../libs/Logger'
+import type { Logger } from '@/core/libs/Logger'
 
 export interface Context {
   logger: Logger

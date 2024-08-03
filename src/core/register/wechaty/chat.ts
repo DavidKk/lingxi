@@ -1,9 +1,9 @@
 import { OK } from '@/core/constants/response'
-import type { Robot } from '../../libs/Robot'
-import { splitString } from '../../utils/splitString'
-import { executePromisesSequentially } from '../../utils/executePromisesSequentially'
-import { MAX_BYTES_SIZE } from '../../constants/wechaty'
-import type { MessageContext, MessageMiddleware } from '../../types'
+import type { Robot } from '@/core/libs/Robot'
+import { splitString } from '@/core/utils/splitString'
+import { executePromisesSequentially } from '@/core/utils/executePromisesSequentially'
+import { MAX_BYTES_SIZE } from '@/core/constants/wechaty'
+import type { MessageContext, MessageMiddleware } from '@/core/types'
 
 export type ChatContext = MessageContext & { robot: Robot }
 export type ChatHandleResult = string | false | undefined

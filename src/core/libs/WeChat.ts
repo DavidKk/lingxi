@@ -1,13 +1,13 @@
 import { WechatyBuilder, ScanStatus, type WechatyOptions } from 'wechaty'
 import * as PUPPET from 'wechaty-puppet'
 import type { ContactSelfInterface, MessageInterface, WechatyInterface } from 'wechaty/impls'
-import { Logger } from '../libs/Logger'
-import { MiddlewareCoordinator } from '../libs/MiddlewareCoordinator'
-import { format } from '../utils/format'
-import { stringifyBytes } from '../utils/stringifyBytes'
-import { isImageMessageContext } from '../utils/isImageMessageContext'
-import { MAX_FILE_SIZE, WECHATY_DEFAULT_OPTIONS } from '../constants/conf'
-import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '../types'
+import { Logger } from '@/core/libs/Logger'
+import { MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
+import { format } from '@/core/utils/format'
+import { stringifyBytes } from '@/core/utils/stringifyBytes'
+import { isImageMessageContext } from '@/core/utils/isImageMessageContext'
+import { MAX_FILE_SIZE, WECHATY_DEFAULT_OPTIONS } from '@/core/constants/conf'
+import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '@/core/types'
 import { Server, type ServerOptions } from './Server'
 import { ApiServer } from './ApiServer'
 
@@ -147,7 +147,7 @@ export class WeChat extends Server<WechatMiddlewareRegistry> {
     const { logger } = context
 
     if (status === ScanStatus.Waiting || status === ScanStatus.Timeout) {
-      logger.info(`wait for user scan qrcode. qrcode: ${qrcode}`)
+      logger.info(`Wait for user scan qrcode. qrcode: ${qrcode}`)
       this.middlewares.qrcode.execute(context)
       this._isLoginning = true
       return

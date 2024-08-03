@@ -1,6 +1,6 @@
-import type { Robot } from '../../libs/Robot'
-import type { MessageMiddleware } from '../../types'
-import { combineMiddlewares } from '../../utils/combineMiddlewares'
+import type { Robot } from '@/core/libs/Robot'
+import type { MessageMiddleware } from '@/core/types'
+import { combineMiddlewares } from '@/core/utils/combineMiddlewares'
 
 export function combineChatMiddlewares(...chatMiddlewares: MessageMiddleware[]) {
   return function combinedChatMiddleware(robot: Robot) {

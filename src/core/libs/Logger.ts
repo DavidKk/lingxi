@@ -1,11 +1,12 @@
 import { camelCase, kebabCase, snakeCase, upperCase, upperFirst } from 'lodash'
 import chalk, { type Color } from 'chalk'
+import stripAnsi from 'strip-ansi'
 import PrettyError from 'pretty-error'
-import { SERVER_NAME } from '../../constants/conf'
-import { formatDate } from '../../utils/formatDate'
-import { format } from '../../utils/format'
-import { Fmt } from './fmt'
+import { SERVER_NAME } from '@/core/constants/conf'
+import { stringifyDatetime } from '@/core/utils/stringifyDatetime'
+import { format } from '@/core/utils/format'
 import { traceId } from '@/core/utils/traceId'
+import { Writer } from './Writer'
 
 export interface LoggerOptions {
   /** 名称 */
@@ -16,6 +17,8 @@ export interface LoggerOptions {
   showTime?: boolean
   /** 追踪 ID */
   traceId?: string | boolean
+  /** 是否保存为文件 */
+  saveFile?: boolean
 }
 
 /** 通用配置 */
@@ -39,8 +42,32 @@ export interface PrintOptions extends RegisterOptions {
 
 export type LoggerMessage = string | string[] | Error
 
+export interface ILoggerConfiguration {
+  logWriterGetter(): Writer
+}
+
+const LoggerConfiguration: ILoggerConfiguration = {
+  logWriterGetter: (() => {
+    let rootWriter: Writer
+
+    return () => {
+      if (!(rootWriter instanceof Writer)) {
+        rootWriter = new Writer()
+      }
+
+      return rootWriter
+    }
+  })(),
+}
+
 export class Logger {
-  public fmt = new Fmt()
+  static configure(optinos?: Partial<ILoggerConfiguration>) {
+    const { logWriterGetter } = optinos || {}
+    if (typeof logWriterGetter === 'function') {
+      LoggerConfiguration.logWriterGetter = logWriterGetter
+    }
+  }
+
   /** 是否展示最详情 */
   public readonly isVerbose = process.argv.includes('--verbose') || process.argv.includes('--profile')
   /** 不打印任何内容 */
@@ -62,13 +89,15 @@ export class Logger {
   protected showName?: boolean
   protected showTime?: boolean
   protected traceId?: string
+  protected saveFile?: boolean
 
   constructor(options?: LoggerOptions) {
-    const { name, showName, showTime, traceId: inputTraceId } = options || {}
+    const { name, showName, showTime, traceId: inputTraceId, saveFile } = options || {}
     this.name = name || SERVER_NAME
     this.showName = typeof showName === 'boolean' ? showName : !!process.env.ci
     this.showTime = typeof showTime === 'boolean' ? showTime : !!process.env.ci
     this.traceId = inputTraceId === true ? traceId() : typeof inputTraceId === 'string' ? inputTraceId : ''
+    this.saveFile = typeof saveFile === 'boolean' ? saveFile : !process.env.ci
 
     this.ok = this.register('greenBright', { prefix: this.prefix('[OK]'), verbose: false })
     this.info = this.register('cyanBright', { prefix: this.prefix('[INFO]'), verbose: false })
@@ -79,9 +108,9 @@ export class Logger {
   }
 
   public clone(options?: LoggerOptions) {
-    const { name = this.name, showName = this.showName, showTime = this.showTime, traceId = this.traceId } = options || {}
+    const { name = this.name, showName = this.showName, showTime = this.showTime, traceId = this.traceId, saveFile = this.saveFile } = options || {}
 
-    return new Logger({ name, showName, showTime, traceId })
+    return new Logger({ name, showName, showTime, traceId, saveFile })
   }
 
   /** 基础着色函数 */
@@ -102,7 +131,7 @@ export class Logger {
     }
 
     return content
-      .replace(/\[DATE\]/g, `[${formatDate()}]`)
+      .replace(/\[DATE\]/g, `[${stringifyDatetime()}]`)
       .replace(/\[TRACEID\]/g, this.traceId ? `[${this.traceId}]` : '')
       .replace(/<Pascal:(.+?)>/g, (_, $1) => `${upperFirst(camelCase($1))}`)
       .replace(/<Camel:(.+?)>/g, (_, $1) => `${upperCase($1)}`)
@@ -128,6 +157,14 @@ export class Logger {
         const content = color && typeof chalk[color] === 'function' ? chalk[color](message) : message
         // eslint-disable-next-line no-console
         console.log(content)
+
+        if (this.saveFile && typeof LoggerConfiguration.logWriterGetter === 'function') {
+          const writer = LoggerConfiguration.logWriterGetter()
+          if (writer instanceof Writer) {
+            const stripedContent = stripAnsi(content)
+            writer.write(stripedContent)
+          }
+        }
       }
 
       return { message, reason, prettyMessage }

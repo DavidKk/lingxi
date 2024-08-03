@@ -1,13 +1,13 @@
 import { Service, type ServiceOptions } from './Service'
 import { History } from './History'
 import { convertRecordsToContents, Gemini } from './Gemini'
-import { format } from '../utils/format'
-import { stringifyLength } from '../utils/stringifyLength'
-import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '../constants/conf'
-import { isImageMessageContext } from '../utils/isImageMessageContext'
-import { isTextMessageContext } from '../utils/isTextMessageContext'
-import { isImageMessage } from '../utils/isImageMessage'
-import type { MessageContext } from '../types'
+import { format } from '@/core/utils/format'
+import { stringifyLength } from '@/core/utils/stringifyLength'
+import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '@/core/constants/conf'
+import { isImageMessageContext } from '@/core/utils/isImageMessageContext'
+import { isTextMessageContext } from '@/core/utils/isTextMessageContext'
+import { isImageMessage } from '@/core/utils/isImageMessage'
+import type { MessageContext } from '@/core/types'
 
 export type RobotOptions = ServiceOptions
 

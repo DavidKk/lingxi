@@ -8,6 +8,7 @@ junit.xml
 *.tsbuildinfo
 *.memory-card.json
 docker-compose.yml
+logs
 
 # Husky
 .husky
