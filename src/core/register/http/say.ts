@@ -3,8 +3,10 @@ import type { RequestMiddleware } from '@/core/types/middleware'
 import type { ContactInterface, WechatyInterface } from 'wechaty/impls'
 import { done } from '@/core/utils/http'
 
+export type Yes = 'yes' | true
+
 export interface SayPayload {
-  star: boolean
+  star: boolean | Yes
   alias: string
   message: string
 }
@@ -40,7 +42,7 @@ export function say(handle: SayHandle): RequestMiddleware<SayContext> {
         return done(context, 500, 'content is missing.')
       }
 
-      const shouldSay = (typeof star === 'boolean' && star === true) || (typeof alias === 'string' && alias)
+      const shouldSay = star === 'yes' || (typeof star === 'boolean' && star === true) || (typeof alias === 'string' && alias)
       if (!shouldSay) {
         logger.fail(`Say but no alias or star, skip. messsage: ${message}`)
         return done(context, 400, 'alias or star is required.')
