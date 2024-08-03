@@ -9,6 +9,8 @@ import { stringifyDatetime } from '@/core/utils/stringifyDatetime'
 import { format } from '@/core/utils/format'
 import { traceId } from '@/core/utils/traceId'
 import { Writer } from './Writer'
+import { LOGGER_EXPIRE_DAY } from '../constants/logger'
+import { DAY } from '../constants/size'
 
 export interface LoggerOptions {
   /** 名称 */
@@ -21,6 +23,8 @@ export interface LoggerOptions {
   traceId?: string | boolean
   /** 是否保存为文件 */
   saveFile?: boolean
+  /** 过期日期, 必须大于 0 */
+  expireDay?: number
 }
 
 /** 通用配置 */
@@ -90,18 +94,21 @@ export class Logger {
   public print: ReturnType<typeof this.register>
 
   protected name: string
-  protected showName?: boolean
-  protected showTime?: boolean
-  protected traceId?: string
-  protected saveFile?: boolean
+  protected showName: boolean
+  protected showTime: boolean
+  protected traceId: string
+  protected saveFile: boolean
+  protected expireDay: number
+  protected lastClearLogFilesTime: number
 
   constructor(options?: LoggerOptions) {
-    const { name, showName, showTime, traceId: inputTraceId, saveFile } = options || {}
+    const { name, showName, showTime, traceId: inputTraceId, saveFile, expireDay } = options || {}
     this.name = name || SERVER_NAME
     this.showName = typeof showName === 'boolean' ? showName : !!process.env.ci
     this.showTime = typeof showTime === 'boolean' ? showTime : !!process.env.ci
     this.traceId = inputTraceId === true ? traceId() : typeof inputTraceId === 'string' ? inputTraceId : ''
     this.saveFile = typeof saveFile === 'boolean' ? saveFile : !process.env.ci
+    this.expireDay = expireDay && Number.isSafeInteger(expireDay) && expireDay > 0 ? expireDay : LOGGER_EXPIRE_DAY
 
     this.ok = this.register('greenBright', { prefix: this.prefix('[OK]'), verbose: false })
     this.info = this.register('cyanBright', { prefix: this.prefix('[INFO]'), verbose: false })
@@ -109,6 +116,9 @@ export class Logger {
     this.fail = this.register('redBright', { prefix: this.prefix('[FAIL]'), verbose: true })
     this.debug = this.register('gray', { prefix: this.prefix('[DEBUG]'), onlyShowInVerbose: true, verbose: false, saveFile: false })
     this.print = this.register(null, { verbose: false, onlyShowInVerbose: true })
+
+    // 清理过期日志文件
+    this.clearExpires()
   }
 
   public async getLogFiles(date: Date | number | string = new Date()) {
@@ -143,6 +153,38 @@ export class Logger {
         }
       })()
     )
+  }
+
+  /** 清除过期日志 */
+  public async clearExpires() {
+    const writer = this.getLogWriter()
+    if (!writer) {
+      return
+    }
+
+    const nowDate = new Date()
+    // 每天清理一次
+    if (this.lastClearLogFilesTime + 1 * DAY > nowDate.getTime()) {
+      return
+    }
+
+    const files = await fs.promises.readdir(writer.outputDir)
+    for (const filename of files) {
+      const fileNameDate = filename.replace(/\.\d+\.log$/, '')
+      const target = new Date(fileNameDate)
+      const delta = target.getDate() + this.expireDay
+      target.setDate(delta)
+
+      if (target > nowDate) {
+        continue
+      }
+
+      const file = path.join(writer.outputDir, filename)
+      await fs.promises.rm(file)
+    }
+
+    // 更新清理时间
+    this.lastClearLogFilesTime = nowDate.getTime()
   }
 
   /** 克隆日志实例 */
@@ -221,6 +263,9 @@ export class Logger {
     if (!writer) {
       return
     }
+
+    // 清理过期日志文件
+    this.clearExpires()
 
     const stripedContent = stripAnsi(content)
     writer.write(stripedContent)
