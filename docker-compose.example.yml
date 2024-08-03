@@ -4,8 +4,8 @@ services:
     container_name: ai-assistant-wechat
     image: ghcr.io/davidkk/ai-assistant-wechat:latest
     volumes:
-      - path/to/libs:/ai-assistant-wechat/libs # option
       - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
+      - path/to/logs:/ai-assistant-wechat/logs:rw # option
     environment:
       - NODE_ENV=production
       # Apprise 服务地址
