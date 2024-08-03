@@ -19,10 +19,16 @@ export class Writer {
   protected stream: fs.WriteStream | null = null
   protected buffer: string[] = []
   protected flushing = false
-  protected currentFileSize = 0
+  protected currentFileName: string
+  protected currentFileSize: number
 
   protected output: string
   protected maxFileSize: number
+
+  /** 当前写入的文件 */
+  public get outputDir() {
+    return this.output
+  }
 
   constructor(options?: WriterOptions) {
     const { output = LOGGER_FILE_PATH, maxFileSize = LOGGER_FILE_MAX_SIZE } = options || {}
@@ -143,6 +149,7 @@ export class Writer {
       return this.createWriteStream(fileIndex + 1)
     }
 
+    this.currentFileName = file
     this.currentFileSize = stats.size
 
     // 创建写入流

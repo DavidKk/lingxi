@@ -4,10 +4,8 @@ import { convertRecordsToContents, Gemini } from './Gemini'
 import { format } from '@/core/utils/format'
 import { stringifyLength } from '@/core/utils/stringifyLength'
 import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '@/core/constants/conf'
-import { isImageMessageContext } from '@/core/utils/isImageMessageContext'
-import { isTextMessageContext } from '@/core/utils/isTextMessageContext'
-import { isImageMessage } from '@/core/utils/isImageMessage'
 import type { MessageContext } from '@/core/types'
+import { isImageMessage, isImageMessageContext, isTextMessageContext } from '../services/wechaty'
 
 export type RobotOptions = ServiceOptions
 

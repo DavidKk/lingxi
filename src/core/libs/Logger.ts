@@ -1,4 +1,6 @@
 import { camelCase, kebabCase, snakeCase, upperCase, upperFirst } from 'lodash'
+import fs from 'fs'
+import path from 'path'
 import chalk, { type Color } from 'chalk'
 import stripAnsi from 'strip-ansi'
 import PrettyError from 'pretty-error'
@@ -107,9 +109,43 @@ export class Logger {
     this.print = this.register(null, { verbose: false, onlyShowInVerbose: true })
   }
 
+  public async getLogFiles(date: Date | number | string = new Date()) {
+    if (typeof date !== 'undefined') {
+      date = new Date(date)
+    }
+
+    if (isNaN(date.getTime())) {
+      date = new Date()
+    }
+
+    const writer = this.getLogWriter()
+    if (!writer) {
+      return []
+    }
+
+    const files = await fs.promises.readdir(writer.outputDir)
+    return Array.from(
+      (function* () {
+        for (const file of files) {
+          if (path.extname(file) !== '.log') {
+            continue
+          }
+
+          const fileNameDate = file.replace(/\.\d+\.log$/, '')
+          const dateString = stringifyDatetime(date, 'YYYY-MM-DD')
+          if (fileNameDate !== dateString) {
+            continue
+          }
+
+          yield path.join(writer.outputDir, file)
+        }
+      })()
+    )
+  }
+
+  /** 克隆日志实例 */
   public clone(options?: LoggerOptions) {
     const { name = this.name, showName = this.showName, showTime = this.showTime, traceId = this.traceId, saveFile = this.saveFile } = options || {}
-
     return new Logger({ name, showName, showTime, traceId, saveFile })
   }
 
@@ -125,6 +161,7 @@ export class Logger {
     return { content, message, reason, prettyMessage }
   }
 
+  /** 渲染模板 */
   protected renderMessage(content: string) {
     if (typeof content !== 'string') {
       throw new Error('content must be string')
@@ -147,7 +184,7 @@ export class Logger {
   /** 注册着色函数 */
   protected register(color: typeof Color | null, defaultOptions?: RegisterOptions) {
     const { prefix: defaultPrefix, onlyShowInVerbose = false, verbose: defaultVerbose = this.isVerbose, silence: defaultSilence = this.isSilence } = defaultOptions || {}
-    return (info: LoggerMessage, options?: PrintOptions) => {
+    function log(this: Logger, info: LoggerMessage, options?: PrintOptions) {
       const { prefix: inPrefix = defaultPrefix, verbose = defaultVerbose, silence = defaultSilence, prepend, ...restOptions } = options || {}
       const prefix = [inPrefix, prepend].filter(Boolean).join(' ')
       const { message: inMessage, reason, prettyMessage } = this.pretty(info, { prefix, ...restOptions, verbose })
@@ -157,18 +194,38 @@ export class Logger {
         const content = color && typeof chalk[color] === 'function' ? chalk[color](message) : message
         // eslint-disable-next-line no-console
         console.log(content)
-
-        if (this.saveFile && typeof LoggerConfiguration.logWriterGetter === 'function') {
-          const writer = LoggerConfiguration.logWriterGetter()
-          if (writer instanceof Writer) {
-            const stripedContent = stripAnsi(content)
-            writer.write(stripedContent)
-          }
-        }
+        this.writeLog(content)
       }
 
       return { message, reason, prettyMessage }
     }
+
+    return log.bind(this)
+  }
+
+  /** 写入内容 */
+  protected writeLog(content: string) {
+    const writer = this.getLogWriter()
+    if (!writer) {
+      return
+    }
+
+    const stripedContent = stripAnsi(content)
+    writer.write(stripedContent)
+  }
+
+  /** 获取日志写手 */
+  protected getLogWriter() {
+    if (!(this.saveFile && typeof LoggerConfiguration.logWriterGetter === 'function')) {
+      return
+    }
+
+    const writer = LoggerConfiguration.logWriterGetter()
+    if (!(writer instanceof Writer)) {
+      return
+    }
+
+    return writer
   }
 
   /** 添加前缀 */

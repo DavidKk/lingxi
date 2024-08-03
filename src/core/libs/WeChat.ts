@@ -5,11 +5,11 @@ import { Logger } from '@/core/libs/Logger'
 import { MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
 import { format } from '@/core/utils/format'
 import { stringifyBytes } from '@/core/utils/stringifyBytes'
-import { isImageMessageContext } from '@/core/utils/isImageMessageContext'
 import { MAX_FILE_SIZE, WECHATY_DEFAULT_OPTIONS } from '@/core/constants/conf'
 import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '@/core/types'
 import { Server, type ServerOptions } from './Server'
 import { ApiServer } from './ApiServer'
+import { isImageMessageContext } from '../services/wechaty'
 
 export interface WeChatOptions extends ServerOptions {
   wechatyOptions: WechatyOptions

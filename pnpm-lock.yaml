@@ -17,6 +17,9 @@ importers:
       dotenv:
         specifier: ^16.4.5
         version: 16.4.5
+      file-box:
+        specifier: ^1.4.15
+        version: 1.4.15
       lodash:
         specifier: ^4.17.21
         version: 4.17.21
