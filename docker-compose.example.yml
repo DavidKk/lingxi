@@ -3,10 +3,10 @@ services:
   ai-assistant-wechat:
     container_name: ai-assistant-wechat
     image: ghcr.io/davidkk/ai-assistant-wechat:latest
-    volumes:
-      - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
-      - path/to/logs:/ai-assistant-wechat/logs:rw # option
     environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Asia/Shanghai
       - NODE_ENV=production
       # Apprise 服务地址
       - APPRISE_SERVER_URL=
@@ -16,3 +16,6 @@ services:
       - GEMINI_API_TOKEN=
       # Gemini Vercel 秘钥
       - GEMINI_VERCEL_SECRET=
+    volumes:
+      - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
+      - path/to/logs:/ai-assistant-wechat/logs:rw # option
