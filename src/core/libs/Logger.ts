@@ -36,6 +36,8 @@ export interface PrettyOptions {
 export interface RegisterOptions extends PrettyOptions {
   /** 只展示在"展示详情"的情况下 */
   onlyShowInVerbose?: boolean
+  /** 是否保存为文件 */
+  saveFile?: boolean
 }
 
 export interface PrintOptions extends RegisterOptions {
@@ -105,7 +107,7 @@ export class Logger {
     this.info = this.register('cyanBright', { prefix: this.prefix('[INFO]'), verbose: false })
     this.warn = this.register('yellowBright', { prefix: this.prefix('[WARN]'), verbose: false })
     this.fail = this.register('redBright', { prefix: this.prefix('[FAIL]'), verbose: true })
-    this.debug = this.register('gray', { prefix: this.prefix('[DEBUG]'), onlyShowInVerbose: true, verbose: false })
+    this.debug = this.register('gray', { prefix: this.prefix('[DEBUG]'), onlyShowInVerbose: true, verbose: false, saveFile: false })
     this.print = this.register(null, { verbose: false, onlyShowInVerbose: true })
   }
 
@@ -183,9 +185,16 @@ export class Logger {
 
   /** 注册着色函数 */
   protected register(color: typeof Color | null, defaultOptions?: RegisterOptions) {
-    const { prefix: defaultPrefix, onlyShowInVerbose = false, verbose: defaultVerbose = this.isVerbose, silence: defaultSilence = this.isSilence } = defaultOptions || {}
+    const {
+      prefix: defaultPrefix,
+      onlyShowInVerbose = false,
+      verbose: defaultVerbose = this.isVerbose,
+      silence: defaultSilence = this.isSilence,
+      saveFile: defaultSaveFile = this.saveFile,
+    } = defaultOptions || {}
+
     function log(this: Logger, info: LoggerMessage, options?: PrintOptions) {
-      const { prefix: inPrefix = defaultPrefix, verbose = defaultVerbose, silence = defaultSilence, prepend, ...restOptions } = options || {}
+      const { prefix: inPrefix = defaultPrefix, verbose = defaultVerbose, silence = defaultSilence, saveFile = defaultSaveFile, prepend, ...restOptions } = options || {}
       const prefix = [inPrefix, prepend].filter(Boolean).join(' ')
       const { message: inMessage, reason, prettyMessage } = this.pretty(info, { prefix, ...restOptions, verbose })
 
@@ -194,7 +203,10 @@ export class Logger {
         const content = color && typeof chalk[color] === 'function' ? chalk[color](message) : message
         // eslint-disable-next-line no-console
         console.log(content)
-        this.writeLog(content)
+      }
+
+      if (saveFile) {
+        this.writeLog(message)
       }
 
       return { message, reason, prettyMessage }
