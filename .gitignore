@@ -9,6 +9,7 @@ junit.xml
 *.memory-card.json
 docker-compose.yml
 logs
+*.http
 
 # Husky
 .husky

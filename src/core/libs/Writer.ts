@@ -7,6 +7,7 @@ import { ensureFile } from '@/core/utils/ensureFile'
 import { Logger } from './Logger'
 
 const FLUSH_EVENT_ACTION = 'flush'
+const FILE_NAME_FORMATTER = 'YYYY-MM-DD'
 
 export interface WriterOptions {
   output?: string
@@ -172,7 +173,7 @@ export class Writer {
 
   /** 获取新文件路径 */
   protected getNewFile(index = 0) {
-    const symbol = stringifyDatetime`YYYY-MM-DD`
+    const symbol = this.getFileName()
     const fileName = `${symbol}.${index}.log`
     const file = path.join(this.output, fileName)
     return { index, file }
@@ -180,6 +181,20 @@ export class Writer {
 
   /** 是否应该创建新文件 */
   protected shouldCreateNewFile(size = this.currentFileSize) {
+    if (this.currentFileName && this.getFileName() !== this.extractDateFromFileName(this.currentFileName)) {
+      return true
+    }
+
     return size >= this.maxFileSize
+  }
+
+  /** 提取文件名中的日期 */
+  protected extractDateFromFileName(filename = this.currentFileName) {
+    return path.basename(filename).split('.').shift()!
+  }
+
+  /** 获取当前的文件名 */
+  protected getFileName(date = new Date()) {
+    return stringifyDatetime(date, FILE_NAME_FORMATTER)
   }
 }
