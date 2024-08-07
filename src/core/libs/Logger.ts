@@ -162,6 +162,10 @@ export class Logger {
       return
     }
 
+    if (!fs.existsSync(writer.outputDir)) {
+      return
+    }
+
     const nowDate = new Date()
     // 每天清理一次
     if (this.lastClearLogFilesTime + 1 * DAY > nowDate.getTime()) {
