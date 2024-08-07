@@ -15,16 +15,28 @@ export interface WriterOptions {
 }
 
 export class Writer {
+  /** 日志，saveFile 必须 false 否则死循环 */
   protected logger = new Logger({ showTime: true, saveFile: false })
+  /** 事件实例 */
   protected ee = new EventEmitter()
+  /** 写入流 */
   protected stream: fs.WriteStream | null = null
+  /** 内存缓存 */
   protected buffer: string[] = []
+  /** 刷写中，用于加锁，处理多次调用，非多实例 */
   protected flushing = false
+  /** 当前日志文件名称 */
   protected currentFileName: string
+  /** 当前日志文件大小 */
   protected currentFileSize: number
-
+  /** 输出文件路径 */
   protected output: string
+  /** 最大文件大小 */
   protected maxFileSize: number
+  /** 用于存储计时器 */
+  protected releaseTimer: NodeJS.Timeout | null = null
+  /** 释放延迟 */
+  protected releaseDelay: number
 
   /** 当前写入的文件 */
   public get outputDir() {
@@ -45,6 +57,7 @@ export class Writer {
     this.buffer.push(content)
     this.logger.debug(`Push log to buffer. size: ${content.length}.`)
 
+    // 刷写日志文件
     const flush = async () => {
       if (this.stream) {
         this.logger.debug(`Stream not found, create writeStream and flush log to file.`)
@@ -57,6 +70,7 @@ export class Writer {
       this.flush()
     }
 
+    // 流布存在或者需要换新文件
     if (this.stream && this.shouldCreateNewFile()) {
       this.stream.end(() => {
         this.stream = null
@@ -67,8 +81,30 @@ export class Writer {
     }
 
     flush()
+
+    // 重置释放计时器
+    this.resetReleaseTimer()
   }
 
+  /** 重置释放计时器 */
+  protected resetReleaseTimer() {
+    if (this.releaseTimer) {
+      clearTimeout(this.releaseTimer)
+    }
+
+    this.releaseTimer = setTimeout(() => this.releaseStream(), this.releaseDelay)
+  }
+
+  /** 释放流 */
+  protected releaseStream() {
+    if (this.stream) {
+      this.logger.debug(`Releasing stream due to inactivity.`)
+      this.stream.end()
+      this.stream = null
+    }
+  }
+
+  /** 获取下一次刷写日志 */
   public nextFlush() {
     return new Promise<void>((resolve) => {
       const handleFlush = () => {
