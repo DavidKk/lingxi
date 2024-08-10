@@ -250,7 +250,7 @@ export class Writer {
     }
 
     const files = await fs.promises.readdir(this.output)
-    return files.length > this.maxFileNumber
+    return files.length >= this.maxFileNumber
   }
 
   /** 是否因为日期原因需要创建新文件 */

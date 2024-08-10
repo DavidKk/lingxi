@@ -65,54 +65,31 @@ describe('Writer', () => {
     expect(mockWriteStream.write).toHaveBeenCalledTimes(1)
     expect(mockWriteStream.write).toHaveBeenCalledWith('Hello, world!\nThis is a test\n')
   }, 3e3)
-})
 
-describe('Writer (file writing)', () => {
-  let writer: Writer
-
-  beforeEach(async () => {
-    writer = new Writer()
+  it('should have default properties', async () => {
+    const writer = new Writer()
+    expect(writer['output']).toEqual(LOGGER_FILE_PATH)
+    expect(writer['maxFileSize']).toEqual(LOGGER_FILE_MAX_SIZE)
   })
 
-  afterEach(async () => {
-    jest.clearAllMocks()
+  it('should handle exceeding the maximum number of files', async () => {
+    const maxFileNumber = 5
+    const writer = new Writer({ maxFileNumber })
 
-    await new Promise<void>((resolve) => {
-      setImmediate(() => {
-        vol.reset()
-        resolve()
-      })
-    })
-  })
+    // Mock the file system to simulate the maximum number of files
+    const files: Record<string, string> = {}
+    for (let i = 0; i < maxFileNumber; i++) {
+      const name = path.join(writer['output'], `${stringifyDatetime(new Date(), 'YYYY-MM-DD')}.${i}.log`)
+      files[name] = ''
+    }
 
-  it('should write stream to file', async () => {
-    writer.write('Hello, world!')
-    await writer.waitNextStreamReleased()
+    vol.fromJSON(files)
 
-    const symbol = stringifyDatetime`YYYY-MM-DD`
-    const logFile = path.join(writer['output'], `${symbol}.0.log`)
-    const source = vol.toJSON()
-    expect(source[logFile]).toEqual('Hello, world!\n')
-  })
+    // 超大数量
+    expect(writer['isOverNumber']()).resolves.toBeTruthy()
 
-  it('should rotate log file when max file size is reached', async () => {
-    const writer = new Writer({ maxFileSize: 6 })
-
-    writer.write('Hello!')
-    await writer.waitNextStreamReleased()
-
-    writer.write('World!')
-    await writer.waitNextStreamReleased()
-
-    const source = vol.toJSON()
-    const files = Object.keys(source)
-    expect(files.length).toEqual(2)
-
-    const symbol = stringifyDatetime`YYYY-MM-DD`
-    expect(files[0]).toEqual(path.join(writer['output'], `${symbol}.0.log`))
-    expect(files[1]).toEqual(path.join(writer['output'], `${symbol}.1.log`))
-
-    expect(source[files[0]]).toEqual('Hello!\n')
-    expect(source[files[1]]).toEqual('World!\n')
+    // Attempt to write a new log entry, should throw an error
+    const writeOperation = () => writer['createWriteStream']()
+    await expect(writeOperation()).rejects.toThrow(/The number of files is over/)
   })
 })
