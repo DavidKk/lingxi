@@ -2,10 +2,15 @@ import fs from 'fs'
 import path from 'path'
 import { ensureFile } from '@/core/utils/ensureFile'
 import { vol } from 'memfs'
+
 // eslint-disable-next-line @typescript-eslint/consistent-type-imports
 jest.mock('fs', () => jest.requireActual<typeof import('memfs')>('memfs'))
 
 describe('ensureFile', () => {
+  beforeEach(() => {
+    vol.reset()
+  })
+
   it('should create a file if it does not exist', async () => {
     const filePath = path.join(__dirname, 'test.txt')
 
