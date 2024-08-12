@@ -2,10 +2,11 @@ import fs from 'fs'
 import path from 'path'
 import { EventEmitter } from 'events'
 import { stringifyDatetime } from '@/core/utils/stringifyDatetime'
-import { LOGGER_FILE_PATH, LOGGER_FILE_MAX_SIZE, LOGGER_FILE_MAX_NUMBER } from '@/core/constants/logger'
+import { LOGGER_FILE_PATH, LOGGER_FILE_MAX_SIZE, LOGGER_FILE_MAX_NUMBER, LOGGER_BUFFER_MAX_SIZE } from '@/core/constants/logger'
 import { ensureFile } from '@/core/utils/ensureFile'
 import { Logger } from './Logger'
-import { promisify } from 'util'
+import { calculateTotalByteLength } from '../utils/calculateTotalByteLength'
+import { M } from '../constants/size'
 
 const STREAM_RELEASED_EVENT_ACTION = 'STREAM_RELEASED'
 const FILE_NAME_FORMATTER = 'YYYY-MM-DD'
@@ -13,6 +14,8 @@ const FILE_NAME_FORMATTER = 'YYYY-MM-DD'
 export interface WriterOptions {
   /** 输出文件 */
   output?: string
+  /** 最大缓存大小 */
+  maxBufferSize?: number
   /** 最大文件大小 */
   maxFileSize?: number
   /** 最大文件数 */
@@ -24,30 +27,26 @@ export class Writer {
   protected logger = new Logger({ showTime: true, saveFile: false })
   /** 事件实例 */
   protected ee = new EventEmitter()
-  /** 写入流 */
-  protected stream: fs.WriteStream | null = null
-  /** 内存缓存 */
-  protected buffer: string[] = []
+  /** 当前文件日期 */
+  protected currentDate: Date = new Date()
+  /** 当前文件索引 */
+  protected currentIndex = 0
   /** 刷写中，用于加锁，处理多次调用，非多实例 */
   protected flushing = false
   /** 写入流创建中，用于假锁，处理多次创建 */
   protected streamCreating = false
-  /** 当前日志文件名称 */
-  protected currentFileName: string
-  /** 当前日志文件大小 */
-  protected currentFileSize: number
-  /** 当前文件索引 */
-  protected currentFileIndex = 0
+  /** 写入流 */
+  protected stream: fs.WriteStream | null = null
+  /** 内存缓存 */
+  protected buffer: string[] = []
   /** 输出文件路径 */
   protected output: string
   /** 最大文件大小 */
   protected maxFileSize: number
   /** 最大文件数 */
   protected maxFileNumber: number
-  /** 用于存储计时器 */
-  protected releaseTimer: NodeJS.Timeout | null = null
-  /** 释放延迟 */
-  protected releaseDelay: number
+  /** 最大 BufferSize */
+  protected maxBufferSize: number = 1 * M
 
   /** 当前写入的文件 */
   public get outputDir() {
@@ -55,15 +54,27 @@ export class Writer {
   }
 
   constructor(options?: WriterOptions) {
-    const { output = LOGGER_FILE_PATH, maxFileSize = LOGGER_FILE_MAX_SIZE, maxFileNumber = LOGGER_FILE_MAX_NUMBER } = options || {}
+    // prettier-ignore
+    const {
+      output = LOGGER_FILE_PATH,
+      maxFileSize = LOGGER_FILE_MAX_SIZE,
+      maxFileNumber = LOGGER_FILE_MAX_NUMBER,
+      maxBufferSize = LOGGER_BUFFER_MAX_SIZE,
+    } = options || {}
 
     this.output = output
+    this.maxBufferSize = maxBufferSize
     this.maxFileSize = maxFileSize
     this.maxFileNumber = maxFileNumber
   }
 
   /** 写内容 */
   public write(content: string) {
+    if (calculateTotalByteLength(this.buffer) >= this.maxBufferSize) {
+      this.logger.fail(`buffer size over ${this.maxBufferSize}.`)
+      return
+    }
+
     this.buffer.push(content)
     this.logger.debug(`push log to buffer. size: ${content.length}.`)
 
@@ -73,20 +84,20 @@ export class Writer {
       return
     }
 
-    // 日期切换或超过大小都需要重新创建文件
-    if (this.stream && (this.shouldCreateNewFileForDate(this.currentFileName) || this.shouldCreateNewFileForSize(this.currentFileSize))) {
-      this.logger.debug(`create new stream due to date or size changed.`)
-      // 清除之前的流
+    const shouldCreateNewFile = this.shouldCreateNewFileForDate() || this.shouldCreateNewFileForSize()
+    if (this.stream && shouldCreateNewFile) {
       this.forceReleaseStream()
     }
 
     // 流不存在则创建流
     if (!this.stream) {
       this.logger.debug(`create new stream.`)
+
       // 无需等待，只需触发一下即可
       this.createWriteStream()
         .then(() => this.flush())
         .finally(() => (this.streamCreating = false))
+
       return
     }
 
@@ -94,13 +105,74 @@ export class Writer {
     this.flush()
   }
 
+  /** 创建写入流 */
+  protected async createWriteStream() {
+    this.streamCreating = true
+
+    let shouldCreateNewFile = false
+    if (this.stream) {
+      if (this.shouldCreateNewFileForDate()) {
+        this.logger.debug(`create new stream due to date changed.`)
+
+        // 创建不同日期文件
+        this.currentDate = new Date()
+        this.currentIndex = 0
+
+        shouldCreateNewFile = true
+      }
+
+      if (this.shouldCreateNewFileForSize()) {
+        shouldCreateNewFile = true
+
+        // 创建相同日期递增文件
+        this.currentIndex++
+        this.logger.debug(`create new stream due to size changed.`)
+      }
+
+      // 如果有写入流则结束之前的写入流
+      if (shouldCreateNewFile) {
+        this.forceReleaseStream()
+      }
+    } else {
+      shouldCreateNewFile = true
+    }
+
+    // 当前文件绝对可以写入
+    const file = this.getFileAbsolutePath()
+    // 如果 index 都超过最大文件数则肯定有 BUG
+    if (shouldCreateNewFile && (await this.isOverNumber())) {
+      this.streamCreating = false
+      throw new Error(`The number of files is over ${this.maxFileNumber}.`)
+    }
+
+    await ensureFile(file)
+
+    // 创建写入流
+    this.stream = fs.createWriteStream(file, { flags: 'a' })
+    const handleError = (error: Error) => {
+      this.logger.fail(`fail writing to file.\n${error}`)
+    }
+
+    const handleFinish = () => {
+      this.logger.debug(`file finish.`)
+      this.stream = null
+    }
+
+    this.stream.on('error', handleError)
+    this.stream.on('finish', handleFinish)
+
+    this.streamCreating = false
+  }
+
   /** 刷写内容 */
   protected flush() {
+    // 正在写入
     if (this.flushing) {
       this.logger.debug('data flushing, skip flush')
       return
     }
 
+    // 不可写或不存在写入流
     if (!(this.stream && this.stream.writable)) {
       this.logger.warn(`Stream not found or can not write file, skip.`)
       return
@@ -128,30 +200,25 @@ export class Writer {
 
       // 清空缓存区
       this.buffer.length = 0
-      // 同步文件大小
-      this.currentFileSize += Buffer.byteLength(chunk)
     }
 
-    /** 写入结束流 */
-    const finish = () => {
-      this.logger.debug('end data flushing')
-
-      this.stream!.end(() => {
-        this.logger.debug('stream ended')
-
-        this.flushing = false
-        this.stream = null
-
-        this.emitNext(STREAM_RELEASED_EVENT_ACTION)
-      })
-    }
-
-    if (ok === true) {
-      finish()
+    if (ok) {
+      this.endFlush()
       return
     }
 
-    this.stream.once('drain', finish)
+    this.stream.once('drain', () => this.endFlush())
+  }
+
+  protected endFlush() {
+    this.logger.debug('end data flushing')
+    this.flushing = false
+    if (!this.buffer.length && this.stream) {
+      this.stream.end(() => {
+        this.stream = null
+        this.emitNext(STREAM_RELEASED_EVENT_ACTION)
+      })
+    }
   }
 
   /** 强制释放流 */
@@ -192,52 +259,6 @@ export class Writer {
     this.ee.emit(actionType)
   }
 
-  /** 创建写入流 */
-  protected async createWriteStream(): Promise<void> {
-    // 如果 index 都超过最大文件数则肯定有 BUG
-    if (this.currentFileIndex > this.maxFileNumber) {
-      throw new Error(`The number of files is over ${this.maxFileNumber}.`)
-    }
-
-    this.streamCreating = true
-
-    const file = this.getFileAbsolutePath(this.currentFileIndex)
-    await this.ensureFileWriteable(file)
-    this.currentFileName = file
-
-    // 因为日期原因则还原索引
-    if (file && this.shouldCreateNewFileForDate(file)) {
-      this.currentFileIndex = 0
-      return this.createWriteStream()
-    }
-
-    // 获取文件大小
-    const stats = await fs.promises.stat(file)
-    this.currentFileSize = stats.size
-
-    // 是否因为日期原因需要创建新文件, 因为大小原因则需要增加索引
-    if (this.shouldCreateNewFileForSize(stats.size)) {
-      this.currentFileIndex++
-      return this.createWriteStream()
-    }
-
-    // 创建写入流
-    this.stream = fs.createWriteStream(file, { flags: 'a' })
-    const handleError = (error: Error) => {
-      this.logger.fail(`fail writing to file.\n${error}`)
-    }
-
-    const handleFinish = () => {
-      this.logger.debug(`file finish.`)
-      this.stream = null
-    }
-
-    this.stream.on('error', handleError)
-    this.stream.on('finish', handleFinish)
-
-    this.streamCreating = false
-  }
-
   /** 提取文件名中的日期 */
   protected extractDateFromFileName(filename: string) {
     return path.basename(filename).split('.').shift()!
@@ -254,8 +275,9 @@ export class Writer {
   }
 
   /** 是否因为日期原因需要创建新文件 */
-  protected shouldCreateNewFileForDate(file: string) {
-    if (file && this.getFileName() !== this.extractDateFromFileName(file)) {
+  protected shouldCreateNewFileForDate() {
+    const today = new Date()
+    if (this.currentDate.getFullYear() !== today.getFullYear() || this.currentDate.getMonth() !== today.getMonth() || this.currentDate.getDate() !== today.getDate()) {
       return true
     }
 
@@ -263,31 +285,27 @@ export class Writer {
   }
 
   /** 是否因为大小原因需要创建新文件 */
-  protected shouldCreateNewFileForSize(size: number) {
-    return size >= this.maxFileSize
-  }
-
-  /** 确保文件可写 */
-  protected async ensureFileWriteable(file: string) {
-    // 超过最大限度证明有 DEBUG
-    if (await this.isOverNumber()) {
-      throw new Error(`The number of files is over ${this.maxFileNumber}.`)
+  protected shouldCreateNewFileForSize() {
+    const file = this.getFileAbsolutePath()
+    if (!fs.existsSync(file)) {
+      return false
     }
 
-    await ensureFile(file)
-    await fs.promises.access(file, fs.constants.W_OK)
-    return file
+    const stats = fs.statSync(file)
+    return stats.size >= this.maxFileSize
   }
 
   /** 获取文件完整路径 */
-  protected getFileAbsolutePath(index: number) {
+  protected getFileAbsolutePath() {
     const symbol = this.getFileName()
+    const index = this.currentIndex
     const fileName = `${symbol}.${index}.log`
     return path.join(this.output, fileName)
   }
 
   /** 获取当前的文件名，仅名字部分不包含序号 */
-  protected getFileName(date = new Date()) {
+  protected getFileName() {
+    const date = new Date()
     return stringifyDatetime(date, FILE_NAME_FORMATTER)
   }
 }

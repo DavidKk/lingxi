@@ -1,6 +1,9 @@
 import path from 'path'
 import { M } from './size'
 
+/** 最大缓存大小 */
+export const LOGGER_BUFFER_MAX_SIZE = 1 * M
+
 /** 日志单文件最大大小 */
 export const LOGGER_FILE_MAX_SIZE = 10 * M
 
