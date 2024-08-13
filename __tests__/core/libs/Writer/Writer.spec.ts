@@ -93,3 +93,99 @@ describe('Writer', () => {
     await expect(writeOperation()).rejects.toThrow(/The number of files is over/)
   })
 })
+
+describe('Writer - edge cases', () => {
+  let writer: Writer
+  let mockWriteStream: jest.Mocked<fs.WriteStream>
+  let maxFileNumber = 5
+  let originDate = global.Date
+  let currentDate: Date
+
+  const resetDate = () => {
+    currentDate = new originDate()
+  }
+
+  beforeAll(() => {
+    // 创建一个继承自 Date 的类 DateMock
+    class DateMock extends Date {
+      constructor(...args: Parameters<DateConstructor>) {
+        if (args.length === 0) {
+          // 如果没有传参，使用 currentDate 的值
+          super(currentDate.getTime())
+          // 每次调用后将日期增加一天
+          currentDate.setDate(currentDate.getDate() + 1)
+        } else {
+          // 如果有参数，正常调用父类构造函数
+          super(...args)
+        }
+      }
+
+      static now() {
+        return currentDate.getTime()
+      }
+    }
+
+    // 使用 DateMock 替换原始的 Date
+    originDate = global.Date
+    global.Date = DateMock as unknown as DateConstructor
+  })
+
+  afterAll(() => {
+    global.Date = originDate
+  })
+
+  beforeEach(async () => {
+    resetDate()
+
+    const { createWriteStream } = await import('fs')
+    jest.isMockFunction(createWriteStream) &&
+      createWriteStream.mockImplementation((...args: Parameters<typeof memfs.createWriteStream>) => {
+        const stream = memfs.createWriteStream(...args)
+        const write = jest.fn().mockImplementation(stream.write.bind(stream))
+        stream.write = write
+        mockWriteStream = stream as any
+        return mockWriteStream
+      })
+
+    writer = new Writer({ maxFileNumber })
+  })
+
+  afterEach(async () => {
+    jest.clearAllMocks()
+
+    await new Promise<void>((resolve) => {
+      setImmediate(() => {
+        vol.reset()
+        resolve()
+      })
+    })
+  })
+
+  it('should stop creating files after reaching the maximum allowed creations', async () => {
+    // Spy on shouldCreateNewFileForDate and shouldCreateNewFileForSize to always return true
+    jest.spyOn(writer as any, 'shouldCreateNewFileForDate').mockReturnValue(true)
+    jest.spyOn(writer as any, 'shouldCreateNewFileForSize').mockReturnValue(true)
+
+    // Write some content to trigger file creation
+    writer.write('This should trigger file creation')
+
+    // Wait for the next stream release
+    await writer.waitNextStreamReleased()
+
+    // Verify that the write stream was only created once
+    expect(mockWriteStream.write).toHaveBeenCalledTimes(1)
+    expect(mockWriteStream.write).toHaveBeenCalledWith('This should trigger file creation\n')
+  }, 3e3)
+
+  it('should call ensureFile each time when shouldCreateNewFileForDate or shouldCreateNewFileForSize returns true', async () => {
+    jest.spyOn(writer as any, 'shouldCreateNewFileForDate').mockReturnValue(true)
+    jest.spyOn(writer as any, 'shouldCreateNewFileForSize').mockReturnValue(true)
+
+    for (let i = 0; i < maxFileNumber; i++) {
+      await writer['createWriteStream']()
+    }
+
+    const fileSize = Object.keys(vol.toJSON())
+    expect(fileSize.length).toEqual(maxFileNumber)
+  }, 3e3)
+})

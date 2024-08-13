@@ -84,8 +84,8 @@ export class Writer {
       return
     }
 
-    const shouldCreateNewFile = this.shouldCreateNewFileForDate() || this.shouldCreateNewFileForSize()
-    if (this.stream && shouldCreateNewFile) {
+    if (this.stream && (this.shouldCreateNewFileForDate() || this.shouldCreateNewFileForSize())) {
+      // 会设 stream 为空
       this.forceReleaseStream()
     }
 
