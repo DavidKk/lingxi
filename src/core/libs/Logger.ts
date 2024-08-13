@@ -187,7 +187,7 @@ export class Logger {
       }
 
       if (saveFile) {
-        this.write(message)
+        this.writeLogFile(message)
       }
 
       return { message, reason, prettyMessage }
@@ -206,8 +206,8 @@ export class Logger {
   }
 
   /** 写入内容 */
-  protected write(content: string) {
-    const writer = this.getWriter()
+  protected writeLogFile(content: string) {
+    const writer = this.getLogWriter()
     if (!writer) {
       return
     }
@@ -217,7 +217,7 @@ export class Logger {
   }
 
   /** 获取日志写手 */
-  protected getWriter() {
+  protected getLogWriter() {
     if (!(this.saveFile && typeof LoggerConfiguration.writerGetter === 'function')) {
       return
     }
@@ -228,5 +228,40 @@ export class Logger {
     }
 
     return writer
+  }
+
+  /** 获取日志文件 */
+  public async getLogFiles(date: Date | number | string = new Date()) {
+    if (typeof date !== 'undefined') {
+      date = new Date(date)
+    }
+
+    if (isNaN(date.getTime())) {
+      date = new Date()
+    }
+
+    const writer = this.getLogWriter()
+    if (!writer) {
+      return []
+    }
+
+    const files = await fs.promises.readdir(writer.outputDir)
+    return Array.from(
+      (function* () {
+        for (const file of files) {
+          if (path.extname(file) !== '.log') {
+            continue
+          }
+
+          const fileNameDate = file.replace(/\.\d+\.log$/, '')
+          const dateString = stringifyDatetime(date, 'YYYY-MM-DD')
+          if (fileNameDate !== dateString) {
+            continue
+          }
+
+          yield path.join(writer.outputDir, file)
+        }
+      })()
+    )
   }
 }
