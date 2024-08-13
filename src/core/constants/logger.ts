@@ -12,6 +12,3 @@ export const LOGGER_FILE_MAX_NUMBER = 100
 
 /** 日志默认路径 */
 export const LOGGER_FILE_PATH = path.join(process.cwd(), 'logs')
-
-/** 过期日期 */
-export const LOGGER_EXPIRE_DAY = 7

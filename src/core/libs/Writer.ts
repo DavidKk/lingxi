@@ -2,24 +2,36 @@ import fs from 'fs'
 import path from 'path'
 import { EventEmitter } from 'events'
 import { stringifyDatetime } from '@/core/utils/stringifyDatetime'
-import { LOGGER_FILE_PATH, LOGGER_FILE_MAX_SIZE, LOGGER_FILE_MAX_NUMBER, LOGGER_BUFFER_MAX_SIZE } from '@/core/constants/logger'
 import { ensureFile } from '@/core/utils/ensureFile'
 import { Logger } from './Logger'
 import { calculateTotalByteLength } from '../utils/calculateTotalByteLength'
 import { M } from '../constants/size'
 
+/** 释放流事件名称 */
 const STREAM_RELEASED_EVENT_ACTION = 'STREAM_RELEASED'
+/** 文件名格式 */
 const FILE_NAME_FORMATTER = 'YYYY-MM-DD'
+/** 最大缓存大小 */
+const BUFFER_MAX_SIZE = 1 * M
+/** 日志单文件最大大小 */
+const FILE_MAX_SIZE = 10 * M
+/** 最大文件数 */
+const FILE_MAX_NUMBER = 100
+
+export interface WriterParams {
+  /** 输出路径 */
+  output: string
+}
 
 export interface WriterOptions {
-  /** 输出文件 */
-  output?: string
   /** 最大缓存大小 */
   maxBufferSize?: number
   /** 最大文件大小 */
   maxFileSize?: number
   /** 最大文件数 */
   maxFileNumber?: number
+  /** 文件后缀，默认为 ".log" */
+  fileExt?: string
 }
 
 export class Writer {
@@ -47,25 +59,23 @@ export class Writer {
   protected maxFileNumber: number
   /** 最大 BufferSize */
   protected maxBufferSize: number = 1 * M
+  /** 文件后缀，默认为 ".log" */
+  protected fileExt: string
 
   /** 当前写入的文件 */
   public get outputDir() {
     return this.output
   }
 
-  constructor(options?: WriterOptions) {
-    // prettier-ignore
-    const {
-      output = LOGGER_FILE_PATH,
-      maxFileSize = LOGGER_FILE_MAX_SIZE,
-      maxFileNumber = LOGGER_FILE_MAX_NUMBER,
-      maxBufferSize = LOGGER_BUFFER_MAX_SIZE,
-    } = options || {}
+  constructor(params: WriterParams, options?: WriterOptions) {
+    const { output } = params
+    const { maxBufferSize = BUFFER_MAX_SIZE, maxFileSize = FILE_MAX_SIZE, maxFileNumber = FILE_MAX_NUMBER, fileExt = '.log' } = options || {}
 
     this.output = output
     this.maxBufferSize = maxBufferSize
     this.maxFileSize = maxFileSize
     this.maxFileNumber = maxFileNumber
+    this.fileExt = fileExt
   }
 
   /** 写内容 */
@@ -174,7 +184,7 @@ export class Writer {
 
     // 不可写或不存在写入流
     if (!(this.stream && this.stream.writable)) {
-      this.logger.warn(`Stream not found or can not write file, skip.`)
+      this.logger.debug(`Stream not found or can not write file, skip.`)
       return
     }
 
@@ -299,7 +309,7 @@ export class Writer {
   protected getFileAbsolutePath() {
     const symbol = this.getFileName()
     const index = this.currentIndex
-    const fileName = `${symbol}.${index}.log`
+    const fileName = `${symbol}.${index}${this.fileExt}`
     return path.join(this.output, fileName)
   }
 

@@ -5,7 +5,7 @@ describe('History', () => {
   let history: History
 
   beforeEach(() => {
-    history = new History({ maxSize: 3 })
+    history = new History({ maxSize: 3, saveFile: false })
   })
 
   test('should add history records to a user', () => {

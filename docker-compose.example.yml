@@ -19,3 +19,4 @@ services:
     volumes:
       - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
       - path/to/logs:/ai-assistant-wechat/logs:rw # option
+      - path/to/chats:/ai-assistant-wechat/chats:rw # option

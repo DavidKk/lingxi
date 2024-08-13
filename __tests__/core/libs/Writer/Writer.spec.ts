@@ -2,7 +2,7 @@ import type fs from 'fs'
 import path from 'path'
 import { vol, fs as memfs } from 'memfs'
 import { Writer } from '@/core/libs/Writer'
-import { LOGGER_FILE_MAX_SIZE, LOGGER_FILE_PATH } from '@/core/constants/logger'
+import { LOGGER_FILE_MAX_SIZE } from '@/core/constants/logger'
 import { stringifyDatetime } from '@/core/utils/stringifyDatetime'
 
 jest.mock('fs', () => {
@@ -27,7 +27,7 @@ describe('Writer', () => {
         return mockWriteStream
       })
 
-    writer = new Writer()
+    writer = new Writer({ output: '/' })
   })
 
   afterEach(async () => {
@@ -42,8 +42,8 @@ describe('Writer', () => {
   })
 
   it('should have default properties', async () => {
-    const writer = new Writer()
-    expect(writer['output']).toEqual(LOGGER_FILE_PATH)
+    const writer = new Writer({ output: '/' })
+    expect(writer['output']).toEqual('/')
     expect(writer['maxFileSize']).toEqual(LOGGER_FILE_MAX_SIZE)
   })
 
@@ -67,14 +67,14 @@ describe('Writer', () => {
   }, 3e3)
 
   it('should have default properties', async () => {
-    const writer = new Writer()
-    expect(writer['output']).toEqual(LOGGER_FILE_PATH)
+    const writer = new Writer({ output: '/' })
+    expect(writer['output']).toEqual('/')
     expect(writer['maxFileSize']).toEqual(LOGGER_FILE_MAX_SIZE)
   })
 
   it('should handle exceeding the maximum number of files', async () => {
     const maxFileNumber = 5
-    const writer = new Writer({ maxFileNumber })
+    const writer = new Writer({ output: '/' }, { maxFileNumber })
 
     // Mock the file system to simulate the maximum number of files
     const files: Record<string, string> = {}
@@ -147,7 +147,7 @@ describe('Writer - edge cases', () => {
         return mockWriteStream
       })
 
-    writer = new Writer({ maxFileNumber })
+    writer = new Writer({ output: '/' }, { maxFileNumber })
   })
 
   afterEach(async () => {
