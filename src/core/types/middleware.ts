@@ -1,7 +1,7 @@
 import type { WechatyInterface } from 'wechaty/impls'
 import type { Middleware, MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
 import type { MessageContext, QrcodeContext, RequestContext } from '@/core/types'
-import type { Robot } from '@/core/libs/Robot'
+import type { Robot } from '@/core/services/Robot'
 
 export type MessageMiddleware<T extends MessageContext = MessageContext> = (robot: Robot) => Middleware<T>
 export type QrcodeMiddleware<T extends QrcodeContext = QrcodeContext> = Middleware<T>

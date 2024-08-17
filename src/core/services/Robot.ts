@@ -1,11 +1,11 @@
-import { CoreService, type CoreServiceOptions } from './CoreService'
-import { History } from './History'
-import { convertRecordsToContents, Gemini } from './Gemini'
+import { CoreService, type CoreServiceOptions } from '@/core/libs/CoreService'
+import { History } from '@/core/libs/History'
 import { format } from '@/core/utils/format'
 import { stringifyLength } from '@/core/utils/stringifyLength'
+import { isImageMessage, isImageMessageContext, isTextMessageContext } from '@/core/utils/wechaty'
 import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '@/core/constants/conf'
 import type { MessageContext } from '@/core/types'
-import { isImageMessage, isImageMessageContext, isTextMessageContext } from '../utils/wechaty'
+import { convertRecordsToContents, Gemini } from './Gemini'
 
 export type RobotOptions = CoreServiceOptions
 

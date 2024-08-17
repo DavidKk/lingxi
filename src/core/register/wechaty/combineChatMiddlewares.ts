@@ -1,4 +1,4 @@
-import type { Robot } from '@/core/libs/Robot'
+import type { Robot } from '@/core/services/Robot'
 import type { MessageMiddleware } from '@/core/types'
 import { combineMiddlewares } from '@/core/utils/combineMiddlewares'
 

@@ -7,7 +7,7 @@ import { format } from '@/core/utils/format'
 import { stringifyBytes } from '@/core/utils/stringifyBytes'
 import { MAX_FILE_SIZE, WECHATY_DEFAULT_OPTIONS } from '@/core/constants/conf'
 import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '@/core/types'
-import { ContextualService, type ContextualServiceOptions } from './ContextualService'
+import { ContextualService, type ContextualServiceOptions } from '@/core/libs/ContextualService'
 import { ApiServer } from './ApiServer'
 import { isImageMessageContext } from '../utils/wechaty'
 
