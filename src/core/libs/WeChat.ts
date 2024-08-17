@@ -7,16 +7,16 @@ import { format } from '@/core/utils/format'
 import { stringifyBytes } from '@/core/utils/stringifyBytes'
 import { MAX_FILE_SIZE, WECHATY_DEFAULT_OPTIONS } from '@/core/constants/conf'
 import type { MessageContext, QrcodeContext, WechatMiddlewareRegistry, EventType, EventHandler, ImageMessageContext, TextMessageContext } from '@/core/types'
-import { Server, type ServerOptions } from './Server'
+import { ContextualService, type ContextualServiceOptions } from './ContextualService'
 import { ApiServer } from './ApiServer'
 import { isImageMessageContext } from '../utils/wechaty'
 
-export interface WeChatOptions extends ServerOptions {
+export interface WeChatOptions extends ContextualServiceOptions {
   wechatyOptions: WechatyOptions
   apiServer?: ApiServer
 }
 
-export class WeChat extends Server<WechatMiddlewareRegistry> {
+export class WeChat extends ContextualService<WechatMiddlewareRegistry> {
   protected wechaty: WechatyInterface
   protected wechatyOptions: WechatyOptions
   protected apiServer: ApiServer

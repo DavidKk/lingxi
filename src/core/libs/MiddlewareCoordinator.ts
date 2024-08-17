@@ -1,13 +1,13 @@
-import type { ServiceOptions } from './Service'
-import { Service } from './Service'
+import type { CoreServiceOptions } from './CoreService'
+import { CoreService } from './CoreService'
 
 export type MiddlewareNext = () => Promise<void> | void
 
 export type Middleware<T> = (context: T, next: MiddlewareNext) => Promise<void> | void
 
-export type MiddlewareCoordinatorOptions = ServiceOptions
+export type MiddlewareCoordinatorOptions = CoreServiceOptions
 
-export class MiddlewareCoordinator<T> extends Service {
+export class MiddlewareCoordinator<T> extends CoreService {
   protected middlewares: Set<Middleware<T>>
 
   constructor(options?: MiddlewareCoordinatorOptions) {

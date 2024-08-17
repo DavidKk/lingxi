@@ -40,7 +40,6 @@ $ pnpm dev
 微信登录需要扫描二维码，通过配置 Apprise，可以将登录信息统一发送到邮件中。
 
 参考 [Apprise 配置](https://github.com/caronc/apprise?tab=readme-ov-file#productivity-based-notifications)
-k
 
 ## Webhook
 

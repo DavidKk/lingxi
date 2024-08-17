@@ -1,5 +1,5 @@
 import type { ReadableStreamDefaultReader } from 'stream/web'
-import { Service } from '@/core/libs/Service'
+import { CoreService } from '@/core/libs/CoreService'
 import type { HistoryImageContent, HistoryRecord, HistoryRole } from '@/core/libs/History'
 import { withVercelHeader } from '@/core/utils/withVercelHeader'
 import { GEMINI_API_SERVER_CHAT_PATH, GEMINI_API_SERVER_ENDPOINT, GEMINI_API_SERVER_FLASH_PATH, GEMINI_API_TOKEN } from '@/core/constants/conf'
@@ -28,7 +28,7 @@ export interface GeminiChatOptions {
   model?: GeminiChatModel
 }
 
-export class Gemini extends Service {
+export class Gemini extends CoreService {
   public async chat(context: MessageContext, contents: GeminiContent[], options?: GeminiChatOptions) {
     const { logger } = context
     if (!(Array.isArray(contents) && contents.length > 0)) {
@@ -90,7 +90,7 @@ export class Gemini extends Service {
     const { onSegmentUpdate } = options || {}
     const decoder = new TextDecoder()
 
-    let remainText: string[] = []
+    const remainText: string[] = []
     let existingTexts: string[] = []
 
     let partialData = ''

@@ -1,10 +1,10 @@
 import { Logger } from './Logger'
 import type { MiddlewareCoordinator } from './MiddlewareCoordinator'
-import { Service, type ServiceOptions } from './Service'
+import { CoreService, type CoreServiceOptions } from './CoreService'
 
-export interface ServerOptions extends ServiceOptions {}
+export interface ContextualServiceOptions extends CoreServiceOptions {}
 
-export abstract class Server<T extends Record<string, MiddlewareCoordinator<any>>> extends Service {
+export abstract class ContextualService<T extends Record<string, MiddlewareCoordinator<any>>> extends CoreService {
   protected middlewares: T
 
   /** 注册中间件 */

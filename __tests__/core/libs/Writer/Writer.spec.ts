@@ -97,7 +97,7 @@ describe('Writer', () => {
 describe('Writer - edge cases', () => {
   let writer: Writer
   let mockWriteStream: jest.Mocked<fs.WriteStream>
-  let maxFileNumber = 5
+  const maxFileNumber = 5
   let originDate = global.Date
   let currentDate: Date
 

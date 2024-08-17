@@ -28,6 +28,7 @@ export async function husky(options = {}) {
   const scripts = [
     inPlatform('win32') ? 'set PATH=\\"%PATH%\\":\\%PATH\\%' : 'export PATH=\\"$PATH\\":\\$PATH',
     ['pre-commit', `pnpm lint-staged`],
+    // eslint-disable-next-line no-useless-escape
     ['commit-msg', `pnpm commitlint --edit \\\$1`],
   ]
 

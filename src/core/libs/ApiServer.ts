@@ -4,14 +4,14 @@ import { format } from '@/core/utils/format'
 import { DEFAULT_API_PORT } from '@/core/constants/server'
 import type { ApiRequest, ApiResponse, RequestContext, WebhookMiddlewareRegistry } from '@/core/types'
 import { done } from '../utils/http'
-import { Server, type ServerOptions } from './Server'
+import { ContextualService, type ContextualServiceOptions } from './ContextualService'
 import { MiddlewareCoordinator, type Middleware } from './MiddlewareCoordinator'
 
-export interface ApiServerOptions extends ServerOptions {
+export interface ApiServerOptions extends ContextualServiceOptions {
   port?: number
 }
 
-export class ApiServer extends Server<WebhookMiddlewareRegistry> {
+export class ApiServer extends ContextualService<WebhookMiddlewareRegistry> {
   protected server: http.Server
   protected port: number
 
@@ -65,6 +65,7 @@ export class ApiServer extends Server<WebhookMiddlewareRegistry> {
       }
 
       if (pathname === absPath) {
+        this.logger.info(`Match route: ${absPath}`)
         return middleware(context, next)
       }
 
@@ -74,6 +75,8 @@ export class ApiServer extends Server<WebhookMiddlewareRegistry> {
 
   protected handleServer(req: ApiRequest, res: ApiResponse) {
     if (req.headers['content-type'] !== 'application/json') {
+      this.logger.fail(`Invalid content type: ${req.headers['content-type']}`)
+
       res.writeHead(404, { 'Content-Type': 'text/plain' })
       res.end(NotFound)
       return

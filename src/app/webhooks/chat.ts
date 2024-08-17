@@ -1,7 +1,9 @@
 import { say } from '@/core'
 
 export default say((context) => {
-  const { data } = context
+  const { data, logger } = context
   const message = data?.message || ''
+  logger.info(`send message: ${message}`)
+
   return message
 })

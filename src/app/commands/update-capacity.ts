@@ -1,7 +1,7 @@
 import { command } from '@/core'
 import { OK } from '@/core/constants/response'
 
-/** 清除聊天记录 */
+/** 更新聊天记录容量 */
 export default command(
   {
     command: '/update-capacity',

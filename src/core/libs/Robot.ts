@@ -1,4 +1,4 @@
-import { Service, type ServiceOptions } from './Service'
+import { CoreService, type CoreServiceOptions } from './CoreService'
 import { History } from './History'
 import { convertRecordsToContents, Gemini } from './Gemini'
 import { format } from '@/core/utils/format'
@@ -7,9 +7,9 @@ import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '@/core/const
 import type { MessageContext } from '@/core/types'
 import { isImageMessage, isImageMessageContext, isTextMessageContext } from '../utils/wechaty'
 
-export type RobotOptions = ServiceOptions
+export type RobotOptions = CoreServiceOptions
 
-export class Robot extends Service {
+export class Robot extends CoreService {
   protected gemini: Gemini
   protected history: History
 

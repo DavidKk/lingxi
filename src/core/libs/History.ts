@@ -4,7 +4,7 @@ import { Writer } from './Writer'
 import { HISTORY_BUFFER_MAX_SIZE, HISTORY_FILE_MAX_NUMBER, HISTORY_FILE_MAX_SIZE, HISTORY_FILE_PATH } from '../constants/history'
 import path from 'path'
 import { dateToStringWithTimezone } from '../utils/dateToStringWithTimezone'
-import { Service } from './Service'
+import { CoreService } from './CoreService'
 
 /** 历史记录角色 */
 export type HistoryRole = 'human' | 'system'
@@ -43,7 +43,7 @@ export interface HistoryOptions {
 /**
  * 历史记录管理类
  */
-export class History extends Service {
+export class History extends CoreService {
   /** 存储历史记录的集合 */
   protected records: HistoryRecords
   /** 每个用户历史记录的最大容量 */
