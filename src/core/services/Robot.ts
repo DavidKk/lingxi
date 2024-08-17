@@ -3,7 +3,7 @@ import { History } from '@/core/libs/History'
 import { format } from '@/core/utils/format'
 import { stringifyLength } from '@/core/utils/stringifyLength'
 import { isImageMessage, isImageMessageContext, isTextMessageContext } from '@/core/utils/wechaty'
-import { CHAT_SEND_RECORD_COUNT, GEMINI_API_SERVER_ENDPOINT } from '@/core/constants/conf'
+import { CHAT_SEND_RECORD_COUNT } from '@/core/constants/conf'
 import type { MessageContext } from '@/core/types'
 import { convertRecordsToContents, Gemini } from './Gemini'
 
@@ -14,7 +14,7 @@ export class Robot extends CoreService {
   protected history: History
 
   public get enableGemini() {
-    return !!GEMINI_API_SERVER_ENDPOINT
+    return !!process.env.GEMINI_API_SERVER_ENDPOINT
   }
 
   constructor(options?: RobotOptions) {

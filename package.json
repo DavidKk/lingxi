@@ -32,6 +32,7 @@
     "lodash": "^4.17.21",
     "memfs": "^4.11.1",
     "nodemailer": "^6.9.14",
+    "path-to-regexp": "^7.1.0",
     "pretty-error": "^4.0.0",
     "qrcode": "^1.5.3",
     "qrcode-terminal": "^0.12.0",

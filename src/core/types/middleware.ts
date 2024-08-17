@@ -11,9 +11,9 @@ export type WechatMiddlewareRegistry = {
   message: MiddlewareCoordinator<MessageContext>
 }
 
-export type RequestMiddleware<T extends RequestContext = RequestContext> = (wechaty: WechatyInterface) => Middleware<T>
+export type RequestMiddleware<T extends RequestContext = RequestContext> = (wechaty: WechatyInterface) => [string, Middleware<T>]
 
 export type WebhookMiddlewareRegistry = {
-  get: MiddlewareCoordinator<RequestContext>
-  post: MiddlewareCoordinator<RequestContext>
+  get?: MiddlewareCoordinator<RequestContext>
+  post?: MiddlewareCoordinator<RequestContext>
 }

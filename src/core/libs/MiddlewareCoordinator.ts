@@ -5,14 +5,22 @@ export type MiddlewareNext = () => Promise<void> | void
 
 export type Middleware<T> = (context: T, next: MiddlewareNext) => Promise<void> | void
 
-export type MiddlewareCoordinatorOptions = CoreServiceOptions
+export interface MiddlewareCoordinatorOptions<T> extends CoreServiceOptions {
+  middlewares?: Middleware<T>[]
+}
 
 export class MiddlewareCoordinator<T> extends CoreService {
   protected middlewares: Set<Middleware<T>>
 
-  constructor(options?: MiddlewareCoordinatorOptions) {
+  constructor(options?: MiddlewareCoordinatorOptions<T>) {
     super(options)
-    this.middlewares = new Set<Middleware<T>>()
+
+    const { middlewares = [] } = options || {}
+    this.middlewares = new Set<Middleware<T>>(middlewares)
+  }
+
+  public get size() {
+    return this.middlewares.size
   }
 
   public use(middleware: Middleware<T>) {

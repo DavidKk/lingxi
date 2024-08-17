@@ -55,5 +55,14 @@ export type ApiResponse = ServerResponse & { req: ApiRequest }
 export interface RequestContext<T = any> extends Context {
   req: ApiRequest
   res: ApiResponse
+  /** 地址 */
+  url: string
+  /** search 参数 */
+  query: Record<string, any>
+  /** 头部信息 */
+  headers: Record<string, any>
+  /** 路由参数 */
+  params: Record<string, any>
+  /** body 参数 */
   data?: T
 }

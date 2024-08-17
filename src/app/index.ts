@@ -1,6 +1,6 @@
 import fs from 'fs'
 import path from 'path'
-import { combineChatMiddlewares, WeChat, Robot, combineWechatyMiddlewares, combineMiddlewares, command, isTextMessageContext } from '@/core'
+import { combineChatMiddlewares, WeChat, Robot, combineMiddlewares, command, isTextMessageContext } from '@/core'
 import type { WeChatOptions, RobotOptions, MessageMiddleware, RequestMiddleware, QrcodeMiddleware, CommandMiddleware } from '@/core'
 import { DEFAULT_COMMANDS_DIR, DEFAULT_MENTIONS_DIR, DEFAULT_QRCODES_DIR, DEFAULT_WEBHOOKS_DIR, WEBHOOK_BASE_PATH } from './constants/conf'
 import { trimCommands } from '@/core/utils/trimCommands'
@@ -51,8 +51,16 @@ export class App extends WeChat {
     }
 
     this.logger.info(`Load ${middlewares.length} webhooks.`)
-    const wechatyMiddleware = combineWechatyMiddlewares(...middlewares)
-    this.apiServer.post(WEBHOOK_BASE_PATH, wechatyMiddleware(this.wechaty))
+
+    const routers = Object.values(middlewares).map((fn) => fn(this.wechaty))
+    for (const [pattern, handle] of routers) {
+      if (!pattern.startsWith(WEBHOOK_BASE_PATH)) {
+        this.logger.warn(`Invalid webhook pattern: ${pattern}`)
+        continue
+      }
+
+      this.apiServer.post(pattern, handle)
+    }
   }
 
   protected async loadMentions() {

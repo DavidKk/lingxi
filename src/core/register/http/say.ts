@@ -6,60 +6,68 @@ import { done } from '@/core/utils/http'
 export type Yes = 'yes' | true
 
 export interface SayPayload {
+  /** 星标好友 */
   star: boolean | Yes
+  /** 指定好友（备注） */
   alias: string
+  /** 聊天信息 */
   message: string
 }
 
 export type SayContext = RequestContext<SayPayload> & { wechaty: WechatyInterface }
-export type SayHandle = (context: SayContext) => string
+export type SayHandle = (context: SayContext) => Promise<string> | string
 
-/** 与星标朋友聊天 */
-export function say(handle: SayHandle): RequestMiddleware<SayContext> {
+/** 发送聊天信息 */
+export function say(pattern: string, handle: SayHandle): RequestMiddleware<SayContext> {
   return function sayMiddlewareFactory(wechaty) {
-    return async function sayMiddleware(context, next) {
-      const { data, logger } = context
-      if (!(typeof data === 'object' && data)) {
-        logger.warn('Say but no data, skip.')
-        return next()
-      }
+    return [
+      pattern,
+      async function sayMiddleware(context, next) {
+        const { data, logger } = context
 
-      if (!wechaty.isLoggedIn) {
-        logger.warn('Say but not login, skip.')
-        return next()
-      }
+        if (!(typeof data === 'object' && data)) {
+          logger.warn('Say but no data, skip.')
+          return next()
+        }
 
-      const { star, alias, message } = data
-      if (!(typeof message === 'string' && message)) {
-        logger.warn('Say but no message, skip.')
-        return done(context, 400, 'message is required.')
-      }
+        if (!wechaty.isLoggedIn) {
+          logger.warn('Say but not login, skip.')
+          return next()
+        }
 
-      const wechatyConetxt = { ...context, wechaty }
-      const content = handle(wechatyConetxt)
-      if (!(typeof content === 'string' && content)) {
-        logger.fail(`Say but no content, skip. messsage: ${message}`)
-        return done(context, 500, 'content is missing.')
-      }
+        const { star, alias, message } = data
+        if (!(typeof message === 'string' && message)) {
+          logger.warn('Say but no message, skip.')
+          return done(context, 400, 'message is required.')
+        }
 
-      const shouldSay = star === 'yes' || (typeof star === 'boolean' && star === true) || (typeof alias === 'string' && alias)
-      if (!shouldSay) {
-        logger.fail(`Say but no alias or star, skip. messsage: ${message}`)
-        return done(context, 400, 'alias or star is required.')
-      }
+        const wechatyConetxt = { ...context, wechaty }
+        const content = await handle(wechatyConetxt)
+        if (!(typeof content === 'string' && content)) {
+          logger.fail(`Say but no content, skip. messsage: ${message}`)
+          return done(context, 500, 'content is missing.')
+        }
 
-      if (star) {
-        await sayToStar(wechatyConetxt, content)
-      } else if (typeof alias === 'string' && alias) {
-        await sayToAlias(wechatyConetxt, alias, content)
-      }
+        const shouldSay = star === 'yes' || (typeof star === 'boolean' && star === true) || (typeof alias === 'string' && alias)
+        if (!shouldSay) {
+          logger.fail(`Say but no alias or star, skip. messsage: ${message}`)
+          return done(context, 400, 'alias or star is required.')
+        }
 
-      logger.info(`Say completed.`)
-      return done(context, 200, 'ok')
-    }
+        if (star) {
+          await sayToStar(wechatyConetxt, content)
+        } else if (typeof alias === 'string' && alias) {
+          await sayToAlias(wechatyConetxt, alias, content)
+        }
+
+        logger.info(`Say completed.`)
+        return done(context, 200, 'ok')
+      },
+    ]
   }
 }
 
+/** 与所有星标好友聊天 */
 async function sayToStar(context: SayContext, message: string) {
   const { wechaty, logger } = context
   const contacts = await wechaty.Contact.findAll()
@@ -90,6 +98,7 @@ async function sayToStar(context: SayContext, message: string) {
   }
 }
 
+/** 与指定备注好友聊天 */
 async function sayToAlias(context: SayContext, alias: string, message: string) {
   const { wechaty, logger } = context
   const contacts = await wechaty.Contact.findAll()

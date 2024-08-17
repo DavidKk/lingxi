@@ -1,7 +1,7 @@
 import { debounce } from 'lodash'
 import qrcodeTerminal from 'qrcode-terminal'
 import qrcode from 'qrcode'
-import { Apprise, APPRISE_SERVER_URL, EMAIL_NOTIFY_TO, EMAIL_SMTP_HOST, EMAIL_SMTP_PASS, EMAIL_SMTP_PORT, EMAIL_SMTP_USER, EMAIL_STMP_SECURE, SERVER_NAME, Smtp } from '@/core'
+import { Apprise, SERVER_NAME, Smtp } from '@/core'
 import type { AppriseMessage, QrcodeContext, QrcodeMiddleware, SmtpSendMailParams, StmpOptions } from '@/core'
 
 const generateQrcodeMiddleware: QrcodeMiddleware = async (ctx, next) => {
@@ -32,12 +32,12 @@ export default debounce(generateQrcodeMiddleware, 500)
 /** 使用 apprise 通知 */
 async function notifyApprise(ctx: QrcodeContext, qrcodeUrl: string) {
   const { logger } = ctx
-  if (!APPRISE_SERVER_URL) {
+  if (!process.env.APPRISE_SERVER_URL) {
     logger.warn('Apprise server url is not set, skip notify.')
     return
   }
 
-  const apprise = new Apprise({ serverUrl: APPRISE_SERVER_URL, logger })
+  const apprise = new Apprise({ serverUrl: process.env.APPRISE_SERVER_URL, logger })
   const emailContent = renderQrcodeEmailContent(qrcodeUrl)
   const message: AppriseMessage = { title: `${SERVER_NAME} Launch`, body: emailContent, format: 'html' }
 
@@ -48,34 +48,41 @@ async function notifyApprise(ctx: QrcodeContext, qrcodeUrl: string) {
 /** 使用邮件通知 */
 async function notifyEmail(ctx: QrcodeContext, qrcodeUrl: string) {
   const { logger } = ctx
-  if (!EMAIL_NOTIFY_TO) {
+  if (!process.env.EMAIL_NOTIFY_TO) {
     logger.warn('Email notify target is not set, skip notify.')
     return
   }
 
-  const stmpOptions: StmpOptions = {
-    host: EMAIL_SMTP_HOST,
-    auth: {
-      user: EMAIL_SMTP_USER,
-      pass: EMAIL_SMTP_PASS,
-    },
+  const host = process.env.EMAIL_SMTP_HOST
+  const user = process.env.EMAIL_SMTP_USER
+  const pass = process.env.EMAIL_SMTP_PASS
+
+  if (!(host && user && pass)) {
+    logger.warn('Email smtp config is not set, skip notify.')
+    return
   }
 
-  const port = parseInt(EMAIL_SMTP_PORT, 10)
+  const stmpOptions: StmpOptions = {
+    host: host,
+    auth: { user, pass },
+  }
+
+  const strPort = process.env.EMAIL_SMTP_PORT
+  const port = strPort ? parseInt(strPort, 10) : NaN
   if (!isNaN(port)) {
     stmpOptions.port = port
   }
 
-  if (EMAIL_STMP_SECURE) {
+  if (process.env.EMAIL_STMP_SECURE) {
     stmpOptions.secure = true
   }
 
   const client = new Smtp(stmpOptions)
-  logger.info(`Send email to ${EMAIL_NOTIFY_TO}`)
+  logger.info(`Send email to ${process.env.EMAIL_NOTIFY_TO}`)
 
   const sendParams: SmtpSendMailParams = {
-    from: EMAIL_SMTP_USER,
-    to: EMAIL_NOTIFY_TO,
+    from: process.env.EMAIL_SMTP_USER,
+    to: process.env.EMAIL_NOTIFY_TO,
     subject: `${SERVER_NAME} Launch`,
     html: renderQrcodeEmailContent(qrcodeUrl),
   }

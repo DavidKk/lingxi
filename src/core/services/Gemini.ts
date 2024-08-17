@@ -2,7 +2,7 @@ import type { ReadableStreamDefaultReader } from 'stream/web'
 import { CoreService } from '@/core/libs/CoreService'
 import type { HistoryImageContent, HistoryRecord, HistoryRole } from '@/core/libs/History'
 import { withVercelHeader } from '@/core/utils/withVercelHeader'
-import { GEMINI_API_SERVER_CHAT_PATH, GEMINI_API_SERVER_ENDPOINT, GEMINI_API_SERVER_FLASH_PATH, GEMINI_API_TOKEN } from '@/core/constants/conf'
+import { GEMINI_API_SERVER_CHAT_PATH, GEMINI_API_SERVER_FLASH_PATH } from '@/core/constants/conf'
 import { GenerationConfig, SafetySettings } from '@/core/constants/gemini'
 import type { GeminiContent, GeminiMessageDTO, GeminiRespDTO, MessageContext } from '@/core/types'
 import { format } from '@/core/utils/format'
@@ -49,7 +49,7 @@ export class Gemini extends CoreService {
 
     withVercelHeader(headers)
 
-    const url = `${GEMINI_API_SERVER_ENDPOINT}${modelPath}?key=${GEMINI_API_TOKEN}`
+    const url = `${process.env.GEMINI_API_SERVER_ENDPOINT}${modelPath}?key=${process.env.GEMINI_API_TOKEN}`
     logger.info(`Chat with Gemini. url: ${url}`)
 
     const body = JSON.stringify(payload)
