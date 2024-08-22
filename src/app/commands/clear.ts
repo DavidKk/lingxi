@@ -1,5 +1,5 @@
-import { command } from '@/core'
-import { OK } from '@/core/constants/response'
+import { OK } from '@/providers/HttpProvider'
+import { command } from '../registries/chatRegistry/command'
 
 /** 清除聊天记录 */
 export default command(
@@ -8,10 +8,9 @@ export default command(
     description: 'clear the chat history.',
   },
   async (context) => {
-    const { ssid, logger, robot } = context
+    const { ssid, logger, client } = context
     logger.info(`Clear chat history. ssid:${ssid}`)
-
-    robot.clear(context)
+    client.clearHistory(context)
     return OK
   }
 )

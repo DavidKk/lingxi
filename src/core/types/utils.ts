@@ -46,3 +46,14 @@ export type Get<T, P extends string> = P extends `${infer K}.${infer RS}`
   : P extends keyof T
     ? T[P]
     : never
+
+/**
+ * 验证类型 T 是否满足类型 A
+ *
+ * 这个类型用于在编译时检查类型 T 是否符合类型 A 的要求。
+ * 如果 T 不满足 A，编译器将会报错。
+ *
+ * @template A - 需要满足的基类型
+ * @template T - 被检查的具体类型
+ */
+export type Satisfies<A, T extends A> = T extends A ? T : never

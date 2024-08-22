@@ -12,6 +12,7 @@
     "checkJs": false,
     "noEmit": true,
     "isolatedModules": true,
+    "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,

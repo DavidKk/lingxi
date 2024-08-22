@@ -1,19 +1,29 @@
-import type { WechatyInterface } from 'wechaty/impls'
-import type { Middleware, MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
-import type { MessageContext, QrcodeContext, RequestContext } from '@/core/types'
-import type { Robot } from '@/core/services/Robot'
+import type { MiddlewareCoordinator } from '../libs/MiddlewareCoordinator'
+import type { Satisfies } from './utils'
 
-export type MessageMiddleware<T extends MessageContext = MessageContext> = (robot: Robot) => Middleware<T>
-export type QrcodeMiddleware<T extends QrcodeContext = QrcodeContext> = Middleware<T>
+/**
+ * 支持的中间件类型
+ *
+ * - 'scanQRCode': 用于需要扫描二维码
+ * - 'chatMessage': 用于需要处理聊天信息
+ * - 'httpGET': 用于服务 GET 请求
+ * - 'httpPOST': 用于服务 POST 请求
+ */
+export type MiddlewareType = 'scanQRCode' | 'chatMessage' | 'httpGET' | 'httpPOST'
 
-export type WechatMiddlewareRegistry = {
-  qrcode: MiddlewareCoordinator<QrcodeContext>
-  message: MiddlewareCoordinator<MessageContext>
-}
-
-export type RequestMiddleware<T extends RequestContext = RequestContext> = (wechaty: WechatyInterface) => [string, Middleware<T>]
-
-export type WebhookMiddlewareRegistry = {
-  get?: MiddlewareCoordinator<RequestContext>
-  post?: MiddlewareCoordinator<RequestContext>
-}
+/**
+ * 中间件注册器
+ *
+ * 因为 MiddlewareCoordinator 的上下文在 Middleware 中输入参数
+ * 作为参数类型是协变的，因此这里不能定义任何子类，否则无法被扩展。
+ * 所以这里采用 any 作为上下文。
+ */
+export type MiddlewareRegistry = Satisfies<
+  Record<MiddlewareType, MiddlewareCoordinator<any>>,
+  {
+    scanQRCode: MiddlewareCoordinator<any>
+    chatMessage: MiddlewareCoordinator<any>
+    httpGET: MiddlewareCoordinator<any>
+    httpPOST: MiddlewareCoordinator<any>
+  }
+>

@@ -1,5 +1,5 @@
-import type { HistoryRecord } from '@/core/libs/History'
 import { History } from '@/core/libs/History'
+import type { HistoryRecord } from '@/core/libs/History/types'
 
 describe('History', () => {
   let history: History

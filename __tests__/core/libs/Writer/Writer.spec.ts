@@ -2,8 +2,8 @@ import type fs from 'fs'
 import path from 'path'
 import { vol, fs as memfs } from 'memfs'
 import { Writer } from '@/core/libs/Writer'
-import { LOGGER_FILE_MAX_SIZE } from '@/core/constants/logger'
 import { stringifyDatetime } from '@/core/utils/stringifyDatetime'
+import { LOGGER_FILE_MAX_SIZE } from '@/core/libs/Logger/constants'
 
 jest.mock('fs', () => {
   // eslint-disable-next-line @typescript-eslint/consistent-type-imports

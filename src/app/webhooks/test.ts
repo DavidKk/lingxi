@@ -1,9 +1,8 @@
-import { say } from '@/core'
+import { format } from '@/core/utils'
+import { api } from '../registries/httpRegistry/api'
 
-export default say('/webhook/test', (context) => {
+export default api('/webhook/test', (context) => {
   const { data, logger } = context
-  const message = data?.message || ''
-  logger.info(`send message: ${message}`)
-
-  return message
+  logger.info(format('Received data: %o', data))
+  return 'ok'
 })

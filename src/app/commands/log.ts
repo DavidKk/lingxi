@@ -1,4 +1,4 @@
-import { command } from '@/core'
+import { command } from '../registries/chatRegistry/command'
 import { FileBox } from 'file-box'
 import path from 'path'
 

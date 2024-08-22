@@ -1,5 +1,5 @@
-import { command } from '@/core'
-import { OK } from '@/core/constants/response'
+import { OK } from '@/providers/HttpProvider'
+import { command } from '../registries/chatRegistry/command'
 
 /** 更新聊天记录容量 */
 export default command(
@@ -8,7 +8,7 @@ export default command(
     description: 'Update the capacity of the chat history.',
   },
   async (context) => {
-    const { ssid, content, logger, robot } = context
+    const { ssid, content, logger, client } = context
     logger.info(`Update the capacity of the chat history. content:${content}, ssid:${ssid}`)
 
     const capacity = parseInt(content, 10)
@@ -16,7 +16,7 @@ export default command(
       return 'Invalid capacity value.'
     }
 
-    robot.updateCapacity(context, capacity)
+    client.updateCapacityHistory(context, capacity)
     return OK
   }
 )
