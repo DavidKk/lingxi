@@ -16,14 +16,26 @@ export interface NotifyPayload {
  * 自动携带 star 参数
  */
 export function notify<T extends Record<string, any>>(pattern: string, handle: HttpHandle<NotifyPayload & { data: T }>): HttpMiddleware<T> {
-  return say<T>(pattern, async (context) => {
-    const { data, logger } = context
+  const sayMiddleware = say<NotifyPayload & { data: T }>(pattern, async (context) => {
+    const { logger } = context
+    const content = await handle(context)
 
-    const notifyData = { star: true, data } as NotifyPayload & { data: T }
-    const notifyContext = { ...context, data: notifyData }
-    const contnet = handle(notifyContext)
-
-    logger.info(format('Notification content: %s', contnet))
-    return contnet
+    logger.info(format('Notification content: %s', content))
+    return content
   })
+
+  return function notifyMiddlewareFactory(client) {
+    const [pattern, middleare] = sayMiddleware(client)
+
+    return [
+      pattern,
+      async function notifyMiddleware(context, next) {
+        const { data } = context
+        const notifyData = { star: true, data } as NotifyPayload & { data: T }
+        const notifyContext = { ...context, data: notifyData }
+
+        return middleare(notifyContext, next)
+      },
+    ]
+  }
 }

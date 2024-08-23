@@ -20,6 +20,7 @@ export function generateSonarrLink(eventType: EventType, series: Series) {
 
   switch (eventType) {
     case 'Test':
+      return ''
     case 'Grab':
     case 'Download':
     case 'Rename':
