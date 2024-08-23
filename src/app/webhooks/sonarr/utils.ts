@@ -129,28 +129,7 @@ export function validateSonarrNotificationPayload(target: any): string | true {
   if (!('eventType' in target)) return 'Missing eventType'
   if (!('series' in target)) return 'Missing series'
   if (!('episodes' in target)) return 'Missing episodes'
-  if (!('downloadInfo' in target)) return 'Missing downloadInfo'
-  if (!('downloadStatusMessages' in target)) return 'Missing downloadStatusMessages'
-  if (!('release' in target)) return 'Missing release'
   if (!('instanceName' in target)) return 'Missing instanceName'
-
-  const seriesValidation = isSeries(target.series)
-  if (!seriesValidation) return 'Series object is invalid'
-
-  if (!Array.isArray(target.episodes) || target.episodes.length === 0) return 'Episodes should be a non-empty array'
-  if (!target.episodes.every(isEpisode)) return 'One or more episodes are invalid'
-
-  const downloadInfoValidation = isDownloadInfo(target.downloadInfo)
-  if (!downloadInfoValidation) return 'DownloadInfo object is invalid'
-
-  if (!Array.isArray(target.downloadStatusMessages)) return 'DownloadStatusMessages should be an array'
-  if (!target.downloadStatusMessages.every(isDownloadStatusMessage)) return 'One or more DownloadStatusMessages are invalid'
-
-  const releaseValidation = isRelease(target.release)
-  if (!releaseValidation) return 'Release object is invalid'
-
-  if (typeof target.eventType !== 'string') return 'EventType should be a string'
-  if (typeof target.instanceName !== 'string') return 'InstanceName should be a string'
 
   return true
 }

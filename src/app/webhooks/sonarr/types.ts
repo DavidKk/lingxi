@@ -1,5 +1,3 @@
-import type { Assign } from 'utility-types'
-
 export interface Image {
   coverType: string
   url: string
@@ -122,20 +120,17 @@ export interface GrabPayload extends BasicPayload {
   customFormatInfo: CustomFormatInfo
 }
 
-export type DownloadPayload = Assign<
-  BasicPayload,
-  {
-    eventType: 'Download'
-    episodeFiles?: EpisodeFile[]
-    episodeFile?: EpisodeFile
-    isUpgrade: boolean
-    downloadClient: string
-    downloadClientType: string
-    downloadId: string
-    customFormatInfo: CustomFormatInfo
-    release: Release
-  }
->
+export interface DownloadPayload extends BasicPayload {
+  eventType: 'Download'
+  episodeFiles?: EpisodeFile[]
+  episodeFile?: EpisodeFile
+  isUpgrade: boolean
+  downloadClient: string
+  downloadClientType: string
+  downloadId: string
+  customFormatInfo: CustomFormatInfo
+  release: Release
+}
 
 export interface ManualInteractionRequiredPayload extends BasicPayload {
   eventType: 'ManualInteractionRequired'
