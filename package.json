@@ -16,7 +16,7 @@
     "clear": "rimraf --glob ./{libs,build,*.tsbuildinfo}",
     "format": "prettier --config .prettierrc.js --write \"**/*.{js,jsx,ts,tsx,d.ts,vue,md,json,yml,yaml}\"",
     "lint": "pnpm lint:ts",
-    "lint:ts": "eslint --fix .",
+    "lint:ts": "eslint --fix . --ignore-path .gitignore",
     "test": "jest -c ./jest.config.ts --coverage --reporters=default --reporters=jest-junit",
     "test:watch": "jest --watch",
     "compile": "tsc --build ./tsconfig.compile.json",
