@@ -1,6 +1,6 @@
 import { format } from '@/core/utils'
 import { say } from '@/app/registries/httpRegistry/say'
-import { generateNotificationMessage, isSonarrNotificationPayload, validateSonarrNotificationPayload } from './generateNotificationMessage'
+import { generateNotificationMessage, isSonarrNotificationPayload, validateSonarrNotificationPayload } from './utils'
 import type { SonarrNotificationPayload } from './types'
 
 export default [
