@@ -16,5 +16,7 @@ declare namespace NodeJS {
     GEMINI_API_TOKEN: string
     /** Gemini Vercel 秘钥 */
     GEMINI_VERCEL_SECRET: string
+    /** Sonarr 服务地址 */
+    SONARR_SERVER_URL: string
   }
 }

@@ -1,36 +1,73 @@
 import { THE_TVDB_SERIES_BASE_URL } from './constants'
 import type { SonarrNotificationPayload, Series, Episode, DownloadInfo, DownloadStatusMessage, Release } from './types'
 
-export function generateNotificationMessage(payload: SonarrNotificationPayload) {
-  const { eventType, series, episodes, downloadInfo, downloadStatusMessages, release } = payload
-  const tvdbLink = `${THE_TVDB_SERIES_BASE_URL}/${series.titleSlug}`
+export function generateSonarrLink(eventType: string, series: Series, episodes: Episode[]) {
+  const sonarrBaseUrl = process.env.SONARR_SERVER_URL || ''
 
   switch (eventType) {
     case 'Test':
-      return `测试通知：系列名称为 ${series.title}（详情链接：${tvdbLink}）`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'Grab':
-      return `抓取完成：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}/season/${episodes[0]?.seasonNumber}`
     case 'Download':
-      return `下载完成：${series.title} - ${downloadInfo.title} (${downloadInfo.quality})\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}/episode/${episodes[0]?.episodeNumber}`
     case 'Rename':
-      return `系列重命名：${series.title}（新标题：${release.releaseTitle}）\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'SeriesAdd':
-      return `新系列添加：${series.title}（年份：${series.year}）\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'SeriesDelete':
-      return `系列删除：${series.title}\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'EpisodeFileDelete':
-      return `剧集文件删除：${episodes[0]?.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/series/${series.tvdbId}/episode/${episodes[0]?.episodeNumber}`
     case 'Health':
-      return `健康检查完成。状态：正常\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/system/health`
     case 'ApplicationUpdate':
-      return `应用更新检测：${payload.instanceName}\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/system/updates`
     case 'HealthRestored':
-      return `健康状态恢复正常。状态：正常\n详情链接：${tvdbLink}`
+      return `${sonarrBaseUrl}/system/health`
+    case 'ManualInteractionRequired':
+      return `${sonarrBaseUrl}/activity/queue`
+    default:
+      return `${sonarrBaseUrl}/dashboard`
+  }
+}
+
+export function generateTvdbLink(series: Series) {
+  return `${THE_TVDB_SERIES_BASE_URL}/${series.titleSlug}`
+}
+
+export function generateNotificationMessage(payload: SonarrNotificationPayload) {
+  const { eventType, series, episodes, downloadInfo, downloadStatusMessages, release } = payload
+  const tvdbLink = generateTvdbLink(series)
+  const sonarrLink = generateSonarrLink(eventType, series, episodes)
+  const links = [`TVDB: ${tvdbLink}`, sonarrLink && `Sonarr: ${sonarrLink}`].filter(Boolean).join('\n')
+
+  switch (eventType) {
+    case 'Test':
+      return `测试通知：系列名称为 ${series.title}（${links}）`
+    case 'Grab':
+      return `抓取完成：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+    case 'Download':
+      return `下载完成：${series.title} - ${downloadInfo.title} (${downloadInfo.quality})\n${links}`
+    case 'Rename':
+      return `系列重命名：${series.title}（新标题：${release.releaseTitle}）\n${links}`
+    case 'SeriesAdd':
+      return `新系列添加：${series.title}（年份：${series.year}）\n${links}`
+    case 'SeriesDelete':
+      return `系列删除：${series.title}\n${links}`
+    case 'EpisodeFileDelete':
+      return `剧集文件删除：${episodes[0]?.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+    case 'Health':
+      return `健康检查完成。状态：正常\n${links}`
+    case 'ApplicationUpdate':
+      return `应用更新检测：${payload.instanceName}\n${links}`
+    case 'HealthRestored':
+      return `健康状态恢复正常。状态：正常\n${links}`
     case 'ManualInteractionRequired':
       const statusMessages = downloadStatusMessages.map((msg) => `${msg.title}：${msg.messages.join(', ')}`).join('\n')
-      return `需要手动处理：\n${statusMessages}\n详情链接：${tvdbLink}`
+      return `需要手动处理：\n${statusMessages}\n${links}`
     default:
-      return `未知事件类型：${eventType}\n详情链接：${tvdbLink}`
+      return `未知事件类型：${eventType}\n${links}`
   }
 }
 
