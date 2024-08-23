@@ -1,5 +1,6 @@
 import fs from 'fs'
 import path from 'path'
+import { upperFirst } from 'lodash'
 import qrcodeTerminal from 'qrcode-terminal'
 import qrcode from 'qrcode'
 import { Telepathy } from '@/core/libs/Telepathy'
@@ -17,6 +18,7 @@ import type { HttpMiddleware } from './registries/httpRegistry'
 import { WEBHOOK_BASE_PATH } from './constants/conf'
 import type { CommandMiddlewareFactory, ChatMiddlewareFactory } from './registries/chatRegistry'
 import { command, combineChatMiddlewares } from './registries/chatRegistry'
+import type { ChatClientAbstract } from '@/core/libs/ChatClientAbstract'
 
 export type MiddlewareRegistry = Partial<
   Satisfies<
@@ -117,6 +119,12 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
     }
   }
 
+  /** 创建中间件工厂函数参入 */
+  protected createMiddlewareFactoryPayload(client: ChatClientAbstract<any>) {
+    const gpt = this.getGPT()
+    return { client, gpt }
+  }
+
   /** 加载聊天文件 */
   protected async loadMentions() {
     const middlewares = await this.load<ChatMiddlewareFactory>(this.mentionDir)
@@ -125,11 +133,10 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
       return
     }
 
-    const gpt = this.getGPT()
-    const mentionsMiddleware = combineChatMiddlewares(...middlewares)
+    const mentionsMiddlewareFactory = combineChatMiddlewares(...middlewares)
     for (const client of this.clients) {
-      const payload = { client, gpt }
-      client.use('chatMessage', mentionsMiddleware(payload))
+      const payload = this.createMiddlewareFactoryPayload(client)
+      client.use('chatMessage', mentionsMiddlewareFactory(payload))
     }
 
     this.logger.info(`Load ${middlewares.length} mentions.`)
@@ -143,16 +150,15 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
       return
     }
 
-    const gptCommandMiddleware = this.lsGpt()
-    const modelsCommandMiddleware = this.models()
-    const helpCommandMiddleware = this.help(middlewares)
-    const commands = [gptCommandMiddleware, modelsCommandMiddleware, helpCommandMiddleware, ...middlewares]
+    const gptCommandMiddlewareFactory = this.applyGptsCommand()
+    const modelsCommandMiddlewareFactory = this.applyModelsCommand()
+    const helpCommandMiddlewareFactory = this.applyHelpCommand(middlewares)
+    const commands = [gptCommandMiddlewareFactory, modelsCommandMiddlewareFactory, helpCommandMiddlewareFactory, ...middlewares]
 
-    const gpt = this.getGPT()
-    const commandMiddleware = combineChatMiddlewares(...commands)
+    const commandMiddlewareFactory = combineChatMiddlewares(...commands)
     for (const client of this.clients) {
-      const payload = { client, gpt }
-      client.use('chatMessage', commandMiddleware(payload))
+      const payload = this.createMiddlewareFactoryPayload(client)
+      client.use('chatMessage', commandMiddlewareFactory(payload))
     }
 
     commands.forEach((module) => this.commands.push(module.command))
@@ -219,8 +225,27 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
     return modules.filter(Boolean).flat()
   }
 
+  /** 打印支持的 GPT 列表 */
+  protected applyGptsCommand() {
+    return command(
+      {
+        command: '/gpts',
+        description: 'list all supported gpts.',
+      },
+      async () => {
+        if (!this.gpts?.length) {
+          return 'No gpts found.'
+        }
+
+        const list = this.gpts.map((gpt) => ` - ${gpt.name}`)
+        const content = `Available gpts:\n${list.join('\n')}`
+        return content
+      }
+    )
+  }
+
   /** 模型列表 */
-  protected models() {
+  protected applyModelsCommand() {
     return command(
       {
         command: '/models',
@@ -237,32 +262,14 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
           return 'No models found.'
         }
 
-        return `Available models:\n${list.join('\n')}`
-      }
-    )
-  }
-
-  /** 打印支持的 GPT 列表 */
-  protected lsGpt() {
-    return command(
-      {
-        command: '/gpts',
-        description: 'list all supported gpts.',
-      },
-      async () => {
-        if (!this.gpts?.length) {
-          return 'No gpts found.'
-        }
-
-        const list = this.gpts.map((gpt) => ` - ${gpt}`)
-        const content = `Available gpts:\n${list.join('\n')}`
-        return content
+        const name = upperFirst(gpt.name)
+        return `Available models in ${name}:\n${list.join('\n')}`
       }
     )
   }
 
   /** 打印帮助文档 */
-  protected help(commands: CommandMiddlewareFactory[]) {
+  protected applyHelpCommand(commands: CommandMiddlewareFactory[]) {
     const helpCommand = command(
       {
         command: '/help',

@@ -9,8 +9,8 @@ export interface GPTAbstractContext extends Context {
 export abstract class GPTAbstract extends CoreServiceAbstract {
   abstract chat(context: GPTAbstractContext): Promise<string | void>
 
-  static SUPPORT_MODELS: string[] = []
+  static readonly SUPPORT_MODELS: readonly string[] = Object.freeze([])
   public get supportModels(): string[] {
-    return Object.getPrototypeOf(this).constructor.GPT_MODELS
+    return Object.getPrototypeOf(this).constructor.SUPPORT_MODELS
   }
 }

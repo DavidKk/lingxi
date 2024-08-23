@@ -1,4 +1,5 @@
 import type { ReadableStreamDefaultReader } from 'stream/web'
+import type { CoreServiceOptions } from '@/core/libs/CoreServiceAbstract'
 import { GPTAbstract, type GPTAbstractContext } from '@/core/libs/GPTAbstract'
 import { format, withVercelHeader } from '@/core/utils'
 import type { MessageContext } from '@/providers/types'
@@ -16,9 +17,14 @@ export interface GeminiChatOptions {
   model?: GeminiChatModel
 }
 
+export type GeminiOptions = Omit<CoreServiceOptions, 'name'>
+
 export class Gemini extends GPTAbstract {
-  static SUPPORT_MODELS: GeminiChatModel[] = ['gemini-pro', 'gemini-1.5-flash']
-  static GPT_NAME = 'gemini'
+  static readonly SUPPORT_MODELS = Object.freeze(['gemini-pro', 'gemini-1.5-flash'])
+
+  constructor(options?: GeminiOptions) {
+    super({ name: 'gemini', ...options })
+  }
 
   public get enableGemini() {
     return !!process.env.GEMINI_API_SERVER_ENDPOINT
