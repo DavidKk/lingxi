@@ -6,14 +6,20 @@ import type { SonarrNotificationPayload } from './types'
 export default [
   notify<SonarrNotificationPayload>('/webhook/sonarr/notify', (context) => {
     const { data: payload, logger } = context
-    logger.info(format('Received data: %o', payload))
-
-    if (!isSonarrNotificationPayload(payload)) {
-      const reason = validateSonarrNotificationPayload(payload)
-      logger.warn(format(`Invalid Sonarr notification payload: ${reason}. data: %o`, payload))
+    const data = payload?.data
+    if (!data) {
+      logger.warn('No data received')
       return
     }
 
-    return generateNotificationMessage(payload)
+    logger.info(format('Received data: %o', data))
+
+    if (!isSonarrNotificationPayload(data)) {
+      const reason = validateSonarrNotificationPayload(data)
+      logger.warn(format(`Invalid Sonarr notification payload: ${reason}. data: %o`, data))
+      return
+    }
+
+    return generateNotificationMessage(data)
   }),
 ]

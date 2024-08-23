@@ -14,13 +14,13 @@ export interface NotifyPayload {
  *
  * 自动携带 star 参数
  */
-export function notify<T extends Record<string, any>>(pattern: string, handle: HttpHandle<T & NotifyPayload>): HttpMiddleware<T> {
+export function notify<T extends Record<string, any>>(pattern: string, handle: HttpHandle<NotifyPayload & { data: T }>): HttpMiddleware<T> {
   return function applyMiddlewareFactory() {
     return [
       pattern,
       async function apiMiddleware(context) {
         const { data } = context
-        const notifyBody = { star: true, ...data } as T & NotifyPayload
+        const notifyBody = { star: true, data } as NotifyPayload & { data: T }
         const notifyContext = { ...context, data: notifyBody }
         const response = await handle(notifyContext)
         return done(context, 200, response)
