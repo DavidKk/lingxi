@@ -5,7 +5,6 @@ import { WeChatyProvider } from './providers/WeChatyProvider'
 import { Gemini } from './services/Gemini'
 
 const app = new App()
-
 app.regsiterNotifier(
   new Apprise({
     serverUrl: process.env.APPRISE_SERVER_URL,
@@ -20,7 +19,5 @@ app.regsiterNotifier(
 )
 
 app.registerChatClient(new WeChatyProvider())
-
 app.registerGPT(new Gemini())
-
 app.start()
