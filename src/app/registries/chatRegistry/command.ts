@@ -48,7 +48,7 @@ export function command(params: CommandParams, handle: ChatHandle): CommandMiddl
       logger.info(`Hit command "${command}"`)
 
       const message = trimCommands(content, command)
-      logger.info(`Command content "${message}"`)
+      logger.info(message ? `Command content "${message}"` : 'No message content, skip.')
 
       const response = handle({ ...context, content: message })
       return modifyValue(response, (res) => (res === true ? OK : res))

@@ -6,7 +6,7 @@ export default command(
   {
     command: '/update-capacity',
     usage: '/update-capacity <capacity>',
-    description: 'Update the capacity of the chat history.',
+    description: 'update the capacity of the chat history.',
   },
   async (context) => {
     const { ssid, content, logger, client } = context
