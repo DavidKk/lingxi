@@ -16,7 +16,7 @@ export type ConfigurableConstructor<T> = abstract new (...args: any[]) => T
 export function withConfigurable<A, T extends Record<string, any>>(Base: ConfigurableConstructor<T>) {
   abstract class Configurable extends Base {
     /** 全局配置，所有继承的子类共享这个静态属性 */
-    private static globalConfiguration: A
+    public static globalConfiguration: A
 
     /**
      * 配置全局设置。

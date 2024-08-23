@@ -22,7 +22,7 @@
     "compile": "tsc --build ./tsconfig.compile.json",
     "dev": "tsx watch ./src/index.ts",
     "start": "node ./libs/index.js",
-    "ok": "pnpm format && pnpm lint && pnpm test"
+    "ok": "pnpm format && pnpm lint && pnpm compile && pnpm test"
   },
   "dependencies": {
     "axios": "^1.7.2",
