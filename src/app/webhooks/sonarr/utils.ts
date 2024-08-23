@@ -1,5 +1,16 @@
 import { THE_TVDB_SERIES_BASE_URL } from './constants'
-import type { SonarrNotificationPayload, Series, Episode, DownloadInfo, DownloadStatusMessage, Release, EventType } from './types'
+import type {
+  SonarrNotificationPayload,
+  Series,
+  Episode,
+  DownloadInfo,
+  DownloadStatusMessage,
+  Release,
+  EventType,
+  GrabPayload,
+  DownloadPayload,
+  ManualInteractionRequiredPayload,
+} from './types'
 
 export function generateSonarrLink(eventType: EventType, series: Series) {
   const sonarrBaseUrl = process.env.SONARR_SERVER_URL || ''
@@ -31,37 +42,50 @@ export function generateTvdbLink(series: Series) {
 }
 
 export function generateNotificationMessage(payload: SonarrNotificationPayload) {
-  const { eventType, series, episodes, downloadInfo, downloadStatusMessages, release } = payload
+  const { eventType, series, episodes } = payload
   const tvdbLink = generateTvdbLink(series)
   const sonarrLink = generateSonarrLink(eventType, series)
-  const links = [`TVDB: ${tvdbLink}`, sonarrLink && `Sonarr: ${sonarrLink}`].filter(Boolean).join('\n')
+  const tvdbLinkContent = `TVDB: ${tvdbLink}`
+  const sonarrLinkContent = sonarrLink ? `Sonarr: ${sonarrLink}` : ''
+  const links = [tvdbLinkContent, sonarrLinkContent].filter(Boolean).join('\n')
+
+  if (isGrabPayload(payload)) {
+    const { series, episodes } = payload
+    return `抓取：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+  }
+
+  if (isDownloadPayload(payload)) {
+    const { series, episodes } = payload
+    return `下载：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+  }
+
+  if (isManualInteractionRequiredPayload(payload)) {
+    const { downloadStatusMessages } = payload
+    const statusMessages = downloadStatusMessages.map((msg) => `${msg.title}：${msg.messages.join(', ')}`).join('\n')
+    return `需要手动处理：\n${statusMessages}\n${links}`
+  }
 
   switch (eventType) {
     case 'Test':
-      return `测试通知：系列名称为 ${series.title}（${links}）`
-    case 'Grab':
-      return `抓取完成：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+      return `测试：${series.title}（${sonarrLink}）`
     case 'Download':
-      return `下载完成：${series.title} - ${downloadInfo.title} (${downloadInfo.quality})\n${links}`
+      return `下载：${series.title}\n${links}`
     case 'Rename':
-      return `系列重命名：${series.title}（新标题：${release.releaseTitle}）\n${links}`
+      return `重命名：${series.title}\n${links}`
     case 'SeriesAdd':
-      return `新系列添加：${series.title}（年份：${series.year}）\n${links}`
+      return `添加系列：${series.title}（年份：${series.year}）\n${links}`
     case 'SeriesDelete':
-      return `系列删除：${series.title}\n${links}`
+      return `删除系列：${series.title}\n${links}`
     case 'EpisodeFileDelete':
-      return `剧集文件删除：${episodes[0]?.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+      return `删除剧集文件：${episodes[0]?.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
     case 'Health':
-      return `健康检查完成。状态：正常\n${links}`
+      return `健康检查完成。状态：正常\n${sonarrLinkContent}`
     case 'ApplicationUpdate':
-      return `应用更新检测：${payload.instanceName}\n${links}`
+      return `应用更新检测：${payload.instanceName}\n${sonarrLinkContent}`
     case 'HealthRestored':
-      return `健康状态恢复正常。状态：正常\n${links}`
-    case 'ManualInteractionRequired':
-      const statusMessages = downloadStatusMessages.map((msg) => `${msg.title}：${msg.messages.join(', ')}`).join('\n')
-      return `需要手动处理：\n${statusMessages}\n${links}`
+      return `健康状态恢复正常。状态：正常\n${sonarrLinkContent}`
     default:
-      return `未知事件类型：${eventType}\n${links}`
+      return `未知事件类型：${eventType}\n${sonarrLinkContent}`
   }
 }
 
@@ -134,4 +158,16 @@ export function validateSonarrNotificationPayload(target: any): string | true {
 export function isSonarrNotificationPayload(target: any): target is SonarrNotificationPayload {
   const validationResult = validateSonarrNotificationPayload(target)
   return validationResult === true
+}
+
+export function isGrabPayload(payload: SonarrNotificationPayload): payload is GrabPayload {
+  return payload.eventType === 'Grab'
+}
+
+export function isDownloadPayload(payload: SonarrNotificationPayload): payload is DownloadPayload {
+  return payload.eventType === 'Download'
+}
+
+export function isManualInteractionRequiredPayload(payload: SonarrNotificationPayload): payload is ManualInteractionRequiredPayload {
+  return payload.eventType === 'ManualInteractionRequired'
 }

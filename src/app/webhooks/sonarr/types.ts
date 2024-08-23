@@ -1,3 +1,5 @@
+import type { Assign } from 'utility-types'
+
 export interface Image {
   coverType: string
   url: string
@@ -68,9 +70,75 @@ export type EventType =
   | 'ApplicationUpdate'
   | 'HealthRestored'
 
-export interface SonarrNotificationPayload {
+export interface MediaInfo {
+  audioChannels: number
+  audioCodec: string
+  audioLanguages: string[]
+  height: number
+  width: number
+  subtitles: string[]
+  videoCodec: string
+  videoDynamicRange: string
+  videoDynamicRangeType: string
+}
+
+export interface EpisodeFile {
+  id: number
+  relativePath: string
+  path: string
+  quality: string
+  qualityVersion: number
+  releaseGroup: string
+  sceneName: string
+  size: number
+  dateAdded: string // ISO 8601 日期格式
+  mediaInfo: MediaInfo
+}
+
+export interface BasicPayload {
+  eventType: EventType
   series: Series
   episodes: Episode[]
+  instanceName: string
+}
+
+export interface UndefinedPayload extends BasicPayload {
+  downloadInfo?: DownloadInfo
+  downloadClient?: string
+  downloadClientType?: string
+  downloadId?: string
+  downloadStatus?: string
+  downloadStatusMessages?: DownloadStatusMessage[]
+  customFormatInfo?: CustomFormatInfo
+  release?: Release
+}
+
+export interface GrabPayload extends BasicPayload {
+  eventType: 'Grab'
+  release: Release
+  downloadClient: string
+  downloadClientType: string
+  downloadId: string
+  customFormatInfo: CustomFormatInfo
+}
+
+export type DownloadPayload = Assign<
+  BasicPayload,
+  {
+    eventType: 'Download'
+    episodeFiles?: EpisodeFile[]
+    episodeFile?: EpisodeFile
+    isUpgrade: boolean
+    downloadClient: string
+    downloadClientType: string
+    downloadId: string
+    customFormatInfo: CustomFormatInfo
+    release: Release
+  }
+>
+
+export interface ManualInteractionRequiredPayload extends BasicPayload {
+  eventType: 'ManualInteractionRequired'
   downloadInfo: DownloadInfo
   downloadClient: string
   downloadClientType: string
@@ -79,7 +147,6 @@ export interface SonarrNotificationPayload {
   downloadStatusMessages: DownloadStatusMessage[]
   customFormatInfo: CustomFormatInfo
   release: Release
-  eventType: EventType
-  instanceName: string
-  applicationUrl: string
 }
+
+export type SonarrNotificationPayload = GrabPayload | DownloadPayload | ManualInteractionRequiredPayload | UndefinedPayload
