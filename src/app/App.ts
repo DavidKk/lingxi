@@ -70,14 +70,14 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
 
   /** 暂停 */
   public async stop() {
-    await this.httpServer.stop()
+    this.httpServer && (await this.httpServer.stop())
     await super.stop()
   }
 
   /** 重启 */
   public async restart() {
-    await this.httpServer.stop()
-    await this.httpServer.serve()
+    this.httpServer && (await this.httpServer.stop())
+    this.httpServer && (await this.httpServer.serve())
     await super.restart()
   }
 
