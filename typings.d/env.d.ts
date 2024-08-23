@@ -18,5 +18,7 @@ declare namespace NodeJS {
     GEMINI_VERCEL_SECRET: string
     /** Sonarr 服务地址 */
     SONARR_SERVER_URL: string
+    /** HTTP 服务端口 */
+    SERVER_PORT: string
   }
 }

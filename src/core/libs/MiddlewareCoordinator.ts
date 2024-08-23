@@ -64,7 +64,7 @@ export class MiddlewareCoordinator<T> extends CoreServiceAbstract {
           return
         }
 
-        this.logger.warn('Next function was not called in middleware')
+        this.logger.debug('Next function was not called in middleware')
       }
     }
   }
