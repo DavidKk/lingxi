@@ -55,6 +55,19 @@ export interface Release {
   releaseType: string
 }
 
+export type EventType =
+  | 'Test'
+  | 'Grab'
+  | 'Download'
+  | 'Rename'
+  | 'SeriesAdd'
+  | 'SeriesDelete'
+  | 'EpisodeFileDelete'
+  | 'ManualInteractionRequired'
+  | 'Health'
+  | 'ApplicationUpdate'
+  | 'HealthRestored'
+
 export interface SonarrNotificationPayload {
   series: Series
   episodes: Episode[]
@@ -66,7 +79,7 @@ export interface SonarrNotificationPayload {
   downloadStatusMessages: DownloadStatusMessage[]
   customFormatInfo: CustomFormatInfo
   release: Release
-  eventType: string
+  eventType: EventType
   instanceName: string
   applicationUrl: string
 }

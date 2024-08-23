@@ -84,7 +84,7 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
   /** 注册发送二维码扫描消息 */
   @Once
   protected applySendScanQRcode() {
-    const notifiers = this.notifiers.filter((notifier) => !notifier.supports.includes('html'))
+    const notifiers = this.notifiers.filter((notifier) => notifier.supports.includes('html'))
     this.use('scanQRCode', this.createQrcodeMiddleware(notifiers))
     this.logger.info('Apply send scan qrcode middleware.')
   }
@@ -98,6 +98,11 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
         // eslint-disable-next-line no-console
         console.log(qrcode)
       })
+
+      if (!notifiers?.length) {
+        logger.warn('no notifiers found')
+        return
+      }
 
       qrcode.toDataURL(input, async (error, url) => {
         if (error) {

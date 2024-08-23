@@ -1,7 +1,7 @@
 import { THE_TVDB_SERIES_BASE_URL } from './constants'
-import type { SonarrNotificationPayload, Series, Episode, DownloadInfo, DownloadStatusMessage, Release } from './types'
+import type { SonarrNotificationPayload, Series, Episode, DownloadInfo, DownloadStatusMessage, Release, EventType } from './types'
 
-export function generateSonarrLink(eventType: string, series: Series) {
+export function generateSonarrLink(eventType: EventType, series: Series) {
   const sonarrBaseUrl = process.env.SONARR_SERVER_URL || ''
   if (!sonarrBaseUrl) {
     return ''
