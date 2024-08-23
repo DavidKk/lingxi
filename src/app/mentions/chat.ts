@@ -1,5 +1,6 @@
 import { reply } from '@/app/registries/chatRegistry/reply'
 
+/** 兜底聊天 */
 export default reply(async (context) => {
   const { isSelf, logger, gpt } = context
   if (isSelf) {

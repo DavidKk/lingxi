@@ -7,10 +7,10 @@ export interface GPTAbstractContext extends Context {
 }
 
 export abstract class GPTAbstract extends CoreServiceAbstract {
-  static GPT_NAME: string
   abstract chat(context: GPTAbstractContext): Promise<string | void>
 
-  public get gptName() {
-    return Object.getPrototypeOf(this).constructor.GPT_NAME
+  static SUPPORT_MODELS: string[] = []
+  public get supportModels(): string[] {
+    return Object.getPrototypeOf(this).constructor.GPT_MODELS
   }
 }

@@ -26,10 +26,15 @@ export function command(params: CommandParams, handle: ChatHandle): CommandMiddl
   }
 
   const middleware = chat(
-    (context) => {
-      const { isStar, isSelf, content, logger } = context
+    async (context) => {
+      const { isStar, isSelf, content, logger, client } = context
       if (!(isStar || isSelf)) {
         logger.debug('Not star or not self, skip.')
+        return
+      }
+
+      if (!(await client.shouldReply(context))) {
+        logger.debug('Not should reply, skip.')
         return
       }
 

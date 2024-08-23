@@ -13,16 +13,16 @@ export class Telepathy<R extends Partial<MiddlewareRegistry>, N extends Notifier
 
   /** 当前激活的 GPT 名称 */
   public get currentGPT() {
-    if (this.currentGPTName && this.gpts.some((gpt) => gpt.gptName === this.currentGPTName)) {
+    if (this.currentGPTName && this.gpts.some((gpt) => gpt.name === this.currentGPTName)) {
       return this.currentGPTName
     }
 
-    return this.gpts[0].gptName
+    return this.gpts[0].name
   }
 
   /** 获取 GPT 服务 */
   public getGPT(name = this.currentGPT) {
-    return this.gpts.find((gpt) => gpt.gptName === name)
+    return this.gpts.find((gpt) => gpt.name === name)
   }
 
   public async start() {
@@ -72,7 +72,7 @@ export class Telepathy<R extends Partial<MiddlewareRegistry>, N extends Notifier
         return
       }
 
-      if (!gpt.gptName) {
+      if (!gpt.name) {
         return
       }
 

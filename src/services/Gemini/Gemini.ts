@@ -17,6 +17,7 @@ export interface GeminiChatOptions {
 }
 
 export class Gemini extends GPTAbstract {
+  static SUPPORT_MODELS: GeminiChatModel[] = ['gemini-pro', 'gemini-1.5-flash']
   static GPT_NAME = 'gemini'
 
   public get enableGemini() {

@@ -143,8 +143,10 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
       return
     }
 
+    const gptCommandMiddleware = this.lsGpt()
+    const modelsCommandMiddleware = this.models()
     const helpCommandMiddleware = this.help(middlewares)
-    const commands = [helpCommandMiddleware, ...middlewares]
+    const commands = [gptCommandMiddleware, modelsCommandMiddleware, helpCommandMiddleware, ...middlewares]
 
     const gpt = this.getGPT()
     const commandMiddleware = combineChatMiddlewares(...commands)
@@ -217,6 +219,48 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
     return modules.filter(Boolean).flat()
   }
 
+  /** 模型列表 */
+  protected models() {
+    return command(
+      {
+        command: '/models',
+        description: 'list all supported models.',
+      },
+      async () => {
+        const gpt = this.getGPT()
+        if (!gpt) {
+          return 'No gpt found.'
+        }
+
+        const list = gpt.supportModels.map((model) => ` - ${model}`)
+        if (!list) {
+          return 'No models found.'
+        }
+
+        return `Available models:\n${list.join('\n')}`
+      }
+    )
+  }
+
+  /** 打印支持的 GPT 列表 */
+  protected lsGpt() {
+    return command(
+      {
+        command: '/gpts',
+        description: 'list all supported gpts.',
+      },
+      async () => {
+        if (!this.gpts?.length) {
+          return 'No gpts found.'
+        }
+
+        const list = this.gpts.map((gpt) => ` - ${gpt}`)
+        const content = `Available gpts:\n${list.join('\n')}`
+        return content
+      }
+    )
+  }
+
   /** 打印帮助文档 */
   protected help(commands: CommandMiddlewareFactory[]) {
     const helpCommand = command(
@@ -224,13 +268,7 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
         command: '/help',
         description: 'list all commands.',
       },
-      async (context) => {
-        const { isRoom, messager } = context
-        const shouldReply = isRoom ? await messager.mentionSelf() : true
-        if (!shouldReply) {
-          return
-        }
-
+      async () => {
         const usages = [...commands, helpCommand].map(({ command, description }) => `- ${command} ${description ? `"${description}"` : ''}`)
         const content = `Available commands:\n${usages.join('\n')}`
         return content
