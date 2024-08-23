@@ -12,6 +12,7 @@ logs
 chats
 *.http
 TODO.md
+history
 
 # Husky
 .husky

@@ -7,7 +7,12 @@ coverage
 junit.xml
 *.tsbuildinfo
 *.memory-card.json
-
+docker-compose.yml
+logs
+chats
+*.http
+TODO.md
+history
 
 # Husky
 .husky
@@ -15,8 +20,8 @@ junit.xml
 # ESLINT
 .eslintcache
 
-# Npm or Yarn or Pnpm
-pnpm-lock.yaml
+
+# Npm or Yarn
 .yarn/*
 !.yarn/patches
 !.yarn/plugins
@@ -31,7 +36,6 @@ pnpm-lock.yaml
 
 node_modules
 npm-debug.log
-npm-shrinkwrap.json
 package-lock.json
 
 
