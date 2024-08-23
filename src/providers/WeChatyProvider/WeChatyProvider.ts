@@ -76,7 +76,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
 
   /** 回复消息 */
   public async reply<T>(context: WeChatyMessageContext, payload: T & WeChatyReplyMessage) {
-    if (!(await this.allowSendMessage(context))) {
+    if (!(await this.shouldReply(context))) {
       this.logger.debug('In chat room, but not mention me, skip mention.')
       return
     }
@@ -117,8 +117,8 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
     this.logger.fail(`Unknown content reply message fail. content: ${content}.`)
   }
 
-  /** 是否允许发送消息 */
-  protected async allowSendMessage(context: WeChatyMessageContext) {
+  /** 是否应该回复 */
+  public async shouldReply(context: WeChatyMessageContext) {
     const { isRoom, messager } = context
     if (isRoom && !(await messager.mentionSelf())) {
       return false

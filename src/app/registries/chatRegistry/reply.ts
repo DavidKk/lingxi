@@ -12,10 +12,15 @@ export function reply(handle: ChatHandle, options?: ReplyOptions): ChatMiddlewar
   return function chatMiddlewareFactory({ client, gpt }) {
     return async function chatMiddleware(context, next) {
       const { content, logger } = context
-
       // 忽略
       if (content === OK) {
         logger.warn(`Content is similar to machine generated, ignore. content: ${content}`)
+        return
+      }
+
+      // 无需回复
+      if (!(await client.shouldReply(context))) {
+        logger.warn(`Should not reply, skip.`)
         return
       }
 
@@ -34,6 +39,7 @@ export function reply(handle: ChatHandle, options?: ReplyOptions): ChatMiddlewar
         return
       }
 
+      // 回复
       client.reply<ReplyMessage>(context, { shouldReply, content: result })
     }
   }

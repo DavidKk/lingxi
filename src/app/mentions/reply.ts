@@ -1,4 +1,4 @@
-import { reply } from '../registries/chatRegistry/reply'
+import { reply } from '@/app/registries/chatRegistry/reply'
 
 export default reply(async (context) => {
   const { isSelf, logger, gpt } = context

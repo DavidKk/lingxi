@@ -33,6 +33,8 @@ export abstract class ChatClientAbstract<T extends Partial<MiddlewareRegistry>, 
   public abstract say<T = ChatClientAbstractMessage>(context: C, message: T): Promise<void>
   /** 回复消息 */
   public abstract reply<T = ChatClientAbstractMessage>(context: C, message: T): Promise<void>
+  /** 是否应该回复 */
+  public abstract shouldReply(context: C): Promise<boolean>
 
   protected history = new History()
   /** 是否为服务中 */
