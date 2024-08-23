@@ -1,5 +1,5 @@
 import { OK } from '@/providers/HttpProvider'
-import { command } from '../registries/chatRegistry/command'
+import { command } from '@/app/registries/chatRegistry/command'
 
 /** 更新聊天记录容量 */
 export default command(

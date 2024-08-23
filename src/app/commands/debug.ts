@@ -1,4 +1,4 @@
-import { command } from '../registries/chatRegistry/command'
+import { command } from '@/app/registries/chatRegistry/command'
 
 /** 调试 */
 export default command(

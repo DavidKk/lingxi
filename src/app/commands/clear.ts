@@ -1,5 +1,5 @@
 import { OK } from '@/providers/HttpProvider'
-import { command } from '../registries/chatRegistry/command'
+import { command } from '@/app/registries/chatRegistry/command'
 
 /** 清除聊天记录 */
 export default command(

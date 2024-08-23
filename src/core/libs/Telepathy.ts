@@ -1,29 +1,13 @@
+import type { MiddlewareRegistry } from '../types/middleware'
 import { ChatClientAbstract } from './ChatClientAbstract'
 import type { Middleware, ExtractMiddlewareCoordinatorContext } from './MiddlewareCoordinator'
 import { Notifier } from './Notifier'
-import type { MiddlewareRegistry } from '../types/middleware'
-import { CoreServiceAbstract } from './CoreServiceAbstract'
-import { GPTAbstract } from './GPTAbstract'
+import type { GPTAbstract } from './GPTAbstract'
+import { GPTServiceRegistry } from './GPTServiceRegistry'
 
-export class Telepathy<R extends Partial<MiddlewareRegistry>, N extends Notifier, G extends GPTAbstract> extends CoreServiceAbstract {
+export class Telepathy<R extends Partial<MiddlewareRegistry>, N extends Notifier, G extends GPTAbstract> extends GPTServiceRegistry<G> {
   protected clients: ChatClientAbstract<R>[] = []
   protected notifiers: N[] = []
-  protected gpts: G[] = []
-  protected currentGPTName: string
-
-  /** 当前激活的 GPT 名称 */
-  public get currentGPT() {
-    if (this.currentGPTName && this.gpts.some((gpt) => gpt.name === this.currentGPTName)) {
-      return this.currentGPTName
-    }
-
-    return this.gpts[0].name
-  }
-
-  /** 获取 GPT 服务 */
-  public getGPT(name = this.currentGPT) {
-    return this.gpts.find((gpt) => gpt.name === name)
-  }
 
   public async start() {
     for (const client of this.clients) {
@@ -62,21 +46,6 @@ export class Telepathy<R extends Partial<MiddlewareRegistry>, N extends Notifier
       }
 
       this.clients.push(client)
-    }
-  }
-
-  /** 注册GPT服务 */
-  public registerGPT(...gpts: G[]) {
-    for (const gpt of gpts) {
-      if (!(gpt instanceof GPTAbstract)) {
-        return
-      }
-
-      if (!gpt.name) {
-        return
-      }
-
-      this.gpts.push(gpt)
     }
   }
 

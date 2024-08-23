@@ -9,7 +9,8 @@ export interface ReplyOptions {
 
 export function reply(handle: ChatHandle, options?: ReplyOptions): ChatMiddlewareFactory {
   const { reply: shouldReply } = options || {}
-  return function chatMiddlewareFactory({ client, gpt }) {
+  return function chatMiddlewareFactory(payload) {
+    const { client } = payload
     return async function chatMiddleware(context, next) {
       const { content, logger } = context
       // 忽略
@@ -25,7 +26,7 @@ export function reply(handle: ChatHandle, options?: ReplyOptions): ChatMiddlewar
       }
 
       // 调用函数
-      const replyContext = { ...context, client, gpt }
+      const replyContext = { ...context, ...payload }
       const result = await handle(replyContext)
 
       // 跳过

@@ -1,6 +1,5 @@
 import fs from 'fs'
 import path from 'path'
-import { upperFirst } from 'lodash'
 import qrcodeTerminal from 'qrcode-terminal'
 import qrcode from 'qrcode'
 import { Telepathy } from '@/core/libs/Telepathy'
@@ -16,7 +15,7 @@ import type { Gpts } from '@/services/types'
 import { DEFAULT_COMMANDS_DIR, DEFAULT_MENTIONS_DIR, DEFAULT_WEBHOOKS_DIR } from './constants/dir'
 import type { HttpMiddleware } from './registries/httpRegistry'
 import { WEBHOOK_BASE_PATH } from './constants/conf'
-import type { CommandMiddlewareFactory, ChatMiddlewareFactory } from './registries/chatRegistry'
+import type { CommandMiddlewareFactory, ChatMiddlewareFactory, ChatMiddlewareFactoryPayload } from './registries/chatRegistry'
 import { command, combineChatMiddlewares } from './registries/chatRegistry'
 import type { ChatClientAbstract } from '@/core/libs/ChatClientAbstract'
 
@@ -32,32 +31,8 @@ export type MiddlewareRegistry = Partial<
   >
 >
 
-export interface AppOptions {
-  commands?: string
-  mentions?: string
-  webhooks?: string
-}
-
 export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
-  protected commandDir: string
-  protected mentionDir: string
-  protected webhookDir: string
-
-  protected httpServer: HttpProvider
-  protected commands: string[]
-
-  constructor(options?: AppOptions) {
-    super()
-
-    const { commands, mentions, webhooks } = options || {}
-
-    this.httpServer = new HttpProvider({ logger: this.logger })
-    this.commands = []
-
-    this.commandDir = typeof commands === 'string' ? commands : DEFAULT_COMMANDS_DIR
-    this.mentionDir = typeof mentions === 'string' ? mentions : DEFAULT_MENTIONS_DIR
-    this.webhookDir = typeof webhooks === 'string' ? webhooks : DEFAULT_WEBHOOKS_DIR
-  }
+  protected httpServer = new HttpProvider({ logger: this.logger })
 
   /** 启动 */
   public async start() {
@@ -120,16 +95,16 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
   }
 
   /** 创建中间件工厂函数参入 */
-  protected createMiddlewareFactoryPayload(client: ChatClientAbstract<any>) {
-    const gpt = this.getGPT()
-    return { client, gpt }
+  protected createMiddlewareFactoryPayload(client: ChatClientAbstract<any>): ChatMiddlewareFactoryPayload {
+    const gpt = this.getGPTService()
+    return { client, gpt, telepathy: this }
   }
 
   /** 加载聊天文件 */
   protected async loadMentions() {
-    const middlewares = await this.load<ChatMiddlewareFactory>(this.mentionDir)
+    const middlewares = await this.load<ChatMiddlewareFactory>(DEFAULT_MENTIONS_DIR)
     if (!middlewares.length) {
-      this.logger.warn(`no mentions found from ${this.mentionDir}`)
+      this.logger.warn(`no mentions found from ${DEFAULT_MENTIONS_DIR}`)
       return
     }
 
@@ -143,33 +118,28 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
   }
 
   /** 加载指令文件 */
-  protected async loadCommands(cwd = this.commandDir) {
-    const middlewares = await this.load<CommandMiddlewareFactory>(cwd)
+  protected async loadCommands() {
+    const middlewares = await this.load<CommandMiddlewareFactory>(DEFAULT_COMMANDS_DIR)
     if (!middlewares.length) {
-      this.logger.warn(`no commands found from ${cwd}`)
+      this.logger.warn(`no commands found from ${DEFAULT_COMMANDS_DIR}`)
       return
     }
 
-    const gptCommandMiddlewareFactory = this.applyGptsCommand()
-    const modelsCommandMiddlewareFactory = this.applyModelsCommand()
     const helpCommandMiddlewareFactory = this.applyHelpCommand(middlewares)
-    const commands = [gptCommandMiddlewareFactory, modelsCommandMiddlewareFactory, helpCommandMiddlewareFactory, ...middlewares]
+    const commands = [helpCommandMiddlewareFactory, ...middlewares]
 
     const commandMiddlewareFactory = combineChatMiddlewares(...commands)
     for (const client of this.clients) {
       const payload = this.createMiddlewareFactoryPayload(client)
       client.use('chatMessage', commandMiddlewareFactory(payload))
     }
-
-    commands.forEach((module) => this.commands.push(module.command))
-    this.logger.info(`Load ${commands.length} commands.`)
   }
 
   /** 加载 webhooks 文件 */
-  protected async loadWebhoks(cwd = this.webhookDir) {
-    const middlewares = await this.load<HttpMiddleware<SayMessage>>(cwd)
+  protected async loadWebhoks() {
+    const middlewares = await this.load<HttpMiddleware<SayMessage>>(DEFAULT_WEBHOOKS_DIR)
     if (!middlewares.length) {
-      this.logger.warn(`no webhooks found from ${cwd}`)
+      this.logger.warn(`no webhooks found from ${DEFAULT_WEBHOOKS_DIR}`)
       return
     }
 
@@ -184,8 +154,6 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
         this.httpServer.post(pattern, handle)
       }
     }
-
-    this.logger.info(`Load ${middlewares.length} webhooks.`)
   }
 
   /** 加载文件 */
@@ -223,49 +191,6 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
 
     const modules = await Promise.all(promises)
     return modules.filter(Boolean).flat()
-  }
-
-  /** 打印支持的 GPT 列表 */
-  protected applyGptsCommand() {
-    return command(
-      {
-        command: '/gpts',
-        description: 'list all supported gpts.',
-      },
-      async () => {
-        if (!this.gpts?.length) {
-          return 'No gpts found.'
-        }
-
-        const list = this.gpts.map((gpt) => ` - ${gpt.name}`)
-        const content = `Available gpts:\n${list.join('\n')}`
-        return content
-      }
-    )
-  }
-
-  /** 模型列表 */
-  protected applyModelsCommand() {
-    return command(
-      {
-        command: '/models',
-        description: 'list all supported models.',
-      },
-      async () => {
-        const gpt = this.getGPT()
-        if (!gpt) {
-          return 'No gpt found.'
-        }
-
-        const list = gpt.supportModels.map((model) => ` - ${model}`)
-        if (!list) {
-          return 'No models found.'
-        }
-
-        const name = upperFirst(gpt.name)
-        return `Available models in ${name}:\n${list.join('\n')}`
-      }
-    )
   }
 
   /** 打印帮助文档 */

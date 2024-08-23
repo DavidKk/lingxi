@@ -6,7 +6,7 @@ import path from 'path'
 export default command(
   {
     command: '/log',
-    description: 'Download log files',
+    description: 'Download log files.',
   },
   async (context) => {
     const { ssid, content, logger } = context

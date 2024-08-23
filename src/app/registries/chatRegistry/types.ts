@@ -1,6 +1,7 @@
 import type { ChatClientAbstract } from '@/core/libs/ChatClientAbstract'
 import type { GPTAbstract } from '@/core/libs/GPTAbstract'
 import type { Middleware } from '@/core/libs/MiddlewareCoordinator'
+import type { Telepathy } from '@/core/libs/Telepathy'
 import type { MessageContext } from '@/providers/types'
 
 export type ChatContext = MessageContext
@@ -8,6 +9,7 @@ export type ChatHandleContext = ChatContext & ChatMiddlewareFactoryPayload
 export type ChatHandle = (context: ChatHandleContext) => Promise<any> | any
 
 export interface ChatMiddlewareFactoryPayload {
+  telepathy: Telepathy<any, any, any>
   client: ChatClientAbstract<any>
   gpt?: GPTAbstract
 }
