@@ -3,6 +3,9 @@ import type { SonarrNotificationPayload, Series, Episode, DownloadInfo, Download
 
 export function generateSonarrLink(eventType: string, series: Series) {
   const sonarrBaseUrl = process.env.SONARR_SERVER_URL || ''
+  if (!sonarrBaseUrl) {
+    return ''
+  }
 
   switch (eventType) {
     case 'Test':
