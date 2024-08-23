@@ -81,8 +81,7 @@ export class HttpProvider extends ContextualServiceAbstract<HttpProviderMiddlewa
       const result = matcher(pathname)
 
       if (result) {
-        this.logger.info(`Match route: ${pattern}`)
-
+        this.logger.info(`Url "${pathname}" match route "${pattern}"`)
         const params = result?.params || {}
         return middleware({ ...context, params }, next)
       }

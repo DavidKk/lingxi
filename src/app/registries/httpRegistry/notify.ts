@@ -1,6 +1,7 @@
 import type { Yes } from '@/core/types'
-import { done } from '@/providers/HttpProvider'
 import type { HttpHandle, HttpMiddleware } from './types'
+import { format } from '@/core/utils'
+import { say } from './say'
 
 export interface NotifyPayload {
   /** 发送给星标用户 */
@@ -15,16 +16,14 @@ export interface NotifyPayload {
  * 自动携带 star 参数
  */
 export function notify<T extends Record<string, any>>(pattern: string, handle: HttpHandle<NotifyPayload & { data: T }>): HttpMiddleware<T> {
-  return function applyMiddlewareFactory() {
-    return [
-      pattern,
-      async function apiMiddleware(context) {
-        const { data } = context
-        const notifyBody = { star: true, data } as NotifyPayload & { data: T }
-        const notifyContext = { ...context, data: notifyBody }
-        const response = await handle(notifyContext)
-        return done(context, 200, response)
-      },
-    ]
-  }
+  return say<T>(pattern, async (context) => {
+    const { data, logger } = context
+
+    const notifyData = { star: true, data } as NotifyPayload & { data: T }
+    const notifyContext = { ...context, data: notifyData }
+    const contnet = handle(notifyContext)
+
+    logger.info(format('Notification content: %s', contnet))
+    return contnet
+  })
 }
