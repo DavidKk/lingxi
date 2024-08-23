@@ -19,8 +19,6 @@ export function generateSonarrLink(eventType: EventType, series: Series) {
   }
 
   switch (eventType) {
-    case 'Test':
-      return ''
     case 'Grab':
     case 'Download':
     case 'Rename':
@@ -30,6 +28,7 @@ export function generateSonarrLink(eventType: EventType, series: Series) {
       return `${sonarrBaseUrl}/series/${series.titleSlug}`
     case 'ManualInteractionRequired':
       return `${sonarrBaseUrl}/activity/queue`
+    case 'Test':
     case 'Health':
     case 'ApplicationUpdate':
     case 'HealthRestored':
@@ -39,46 +38,51 @@ export function generateSonarrLink(eventType: EventType, series: Series) {
 }
 
 export function generateTvdbLink(series: Series) {
-  return `${THE_TVDB_SERIES_BASE_URL}/${series.titleSlug}`
+  const { titleSlug } = series
+  if (!titleSlug) {
+    return ''
+  }
+
+  return `${THE_TVDB_SERIES_BASE_URL}/${titleSlug}`
 }
 
 export function generateNotificationMessage(payload: SonarrNotificationPayload) {
   const { eventType, series, episodes } = payload
   const tvdbLink = generateTvdbLink(series)
   const sonarrLink = generateSonarrLink(eventType, series)
-  const tvdbLinkContent = `TVDB: ${tvdbLink}`
+  const tvdbLinkContent = tvdbLink ? `TVDB: ${tvdbLink}` : ''
   const sonarrLinkContent = sonarrLink ? `Sonarr: ${sonarrLink}` : ''
-  const links = [tvdbLinkContent, sonarrLinkContent].filter(Boolean).join('\n')
+  const linkContent = [tvdbLinkContent, sonarrLinkContent].filter(Boolean).join('\n')
 
   if (isGrabPayload(payload)) {
     const { series, episodes } = payload
-    return `抓取：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+    return `抓取：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${linkContent}`
   }
 
   if (isDownloadPayload(payload)) {
     const { series, episodes } = payload
-    return `下载：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+    return `下载：${series.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${linkContent}`
   }
 
   if (isManualInteractionRequiredPayload(payload)) {
     const { downloadStatusMessages } = payload
     const statusMessages = downloadStatusMessages.map((msg) => `${msg.title}：${msg.messages.join(', ')}`).join('\n')
-    return `需要手动处理：\n${statusMessages}\n${links}`
+    return `需要手动处理：\n${statusMessages}\n${linkContent}`
   }
 
   switch (eventType) {
     case 'Test':
-      return `测试：${series.title}（${sonarrLink}）`
+      return `测试：${series.title}\n${sonarrLinkContent}`
     case 'Download':
-      return `下载：${series.title}\n${links}`
+      return `下载：${series.title}\n${linkContent}`
     case 'Rename':
-      return `重命名：${series.title}\n${links}`
+      return `重命名：${series.title}\n${linkContent}`
     case 'SeriesAdd':
-      return `添加系列：${series.title}（年份：${series.year}）\n${links}`
+      return `添加系列：${series.title}（年份：${series.year}）\n${linkContent}`
     case 'SeriesDelete':
-      return `删除系列：${series.title}\n${links}`
+      return `删除系列：${series.title}\n${linkContent}`
     case 'EpisodeFileDelete':
-      return `删除剧集文件：${episodes[0]?.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${links}`
+      return `删除剧集文件：${episodes[0]?.title}（第 ${episodes[0]?.seasonNumber} 季，第 ${episodes[0]?.episodeNumber} 集）\n${linkContent}`
     case 'Health':
       return `健康检查完成。状态：正常\n${sonarrLinkContent}`
     case 'ApplicationUpdate':
