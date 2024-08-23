@@ -1,20 +1,19 @@
 import { format } from '@/core/utils'
-import { say } from '@/app/registries/httpRegistry/say'
+import { notify } from '@/app/registries/httpRegistry'
 import { generateNotificationMessage, isSonarrNotificationPayload, validateSonarrNotificationPayload } from './utils'
 import type { SonarrNotificationPayload } from './types'
 
 export default [
-  say<{ data: SonarrNotificationPayload }>('/webhook/sonarr/notify', (context) => {
+  notify<SonarrNotificationPayload>('/webhook/sonarr/notify', (context) => {
     const { data: payload, logger } = context
     logger.info(format('Received data: %o', payload))
 
-    const data = payload?.data
-    if (!isSonarrNotificationPayload(data)) {
-      const reason = validateSonarrNotificationPayload(data)
-      logger.warn(format(`Invalid Sonarr notification payload: ${reason}. data: %o`, data))
+    if (!isSonarrNotificationPayload(payload)) {
+      const reason = validateSonarrNotificationPayload(payload)
+      logger.warn(format(`Invalid Sonarr notification payload: ${reason}. data: %o`, payload))
       return
     }
 
-    return generateNotificationMessage(data)
+    return generateNotificationMessage(payload)
   }),
 ]
