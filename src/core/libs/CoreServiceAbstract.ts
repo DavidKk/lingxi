@@ -31,5 +31,5 @@ export abstract class CoreServiceAbstract extends withConfigurable<ICoreServiceC
 
 // 设置默认配置
 CoreServiceAbstract.configure({
-  getLogger: createSingleton(() => new Logger({ name: SERVER_NAME })),
+  getLogger: createSingleton(() => new Logger({ name: SERVER_NAME, showTime: true })),
 })

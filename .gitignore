@@ -1,7 +1,6 @@
 # Dest resouces
 libs
 !**/src/**/libs
-!**/src-new/**/libs
 !**/__tests__/**/libs
 !**/__typetests__/**/libs
 coverage

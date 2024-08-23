@@ -176,22 +176,40 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
   }
 
   /** 加载文件 */
-  protected async load<R>(cwd: string): Promise<R[]> {
-    const commands = path.join(__dirname, cwd)
-    const files = await fs.promises.readdir(commands)
+  protected async load<R>(dir: string): Promise<R[]> {
+    const SUPPORTS_EXT = ['.js', '.ts', '.mjs', '.cjs']
+    const EXCLUDES_EXT = ['.d.ts']
+
+    const cwd = path.join(__dirname, dir)
+    const files = await fs.promises.readdir(cwd)
     const promises = files.map(async (file) => {
-      if (file.endsWith('.d.ts')) {
+      let absPath = path.join(cwd, file)
+
+      const stat = await fs.promises.stat(absPath)
+      if (stat.isDirectory()) {
+        const entries = SUPPORTS_EXT.map((ext) => path.join(absPath, `index${ext}`))
+        const entry = entries.find((file) => fs.existsSync(file))
+
+        if (entry) {
+          absPath = entry
+        }
+      }
+
+      if (EXCLUDES_EXT.some((ext) => absPath.endsWith(ext))) {
         return
       }
 
-      if (file.endsWith('.js') || file.endsWith('.ts')) {
-        const { default: module } = await import(path.join(commands, file))
-        return module
+      if (!SUPPORTS_EXT.some((ext) => absPath.endsWith(ext))) {
+        return
       }
+
+      this.logger.debug(`Load "${path.relative(__dirname, absPath)}" file`)
+      const { default: module } = await import(absPath)
+      return module
     })
 
     const modules = await Promise.all(promises)
-    return modules.filter(Boolean)
+    return modules.filter(Boolean).flat()
   }
 
   /** 打印帮助文档 */

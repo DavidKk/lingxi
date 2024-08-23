@@ -5,6 +5,7 @@ import { History } from './History'
 import type { HistoryRecord } from './History/types'
 
 export interface ChatClientAbstractMessage {
+  message: string
   [k: string]: any
 }
 
