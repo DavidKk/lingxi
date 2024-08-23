@@ -1,34 +1,25 @@
 import { THE_TVDB_SERIES_BASE_URL } from './constants'
 import type { SonarrNotificationPayload, Series, Episode, DownloadInfo, DownloadStatusMessage, Release } from './types'
 
-export function generateSonarrLink(eventType: string, series: Series, episodes: Episode[]) {
+export function generateSonarrLink(eventType: string, series: Series) {
   const sonarrBaseUrl = process.env.SONARR_SERVER_URL || ''
 
   switch (eventType) {
     case 'Test':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'Grab':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}/season/${episodes[0]?.seasonNumber}`
     case 'Download':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}/episode/${episodes[0]?.episodeNumber}`
     case 'Rename':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'SeriesAdd':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'SeriesDelete':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}`
     case 'EpisodeFileDelete':
-      return `${sonarrBaseUrl}/series/${series.tvdbId}/episode/${episodes[0]?.episodeNumber}`
-    case 'Health':
-      return `${sonarrBaseUrl}/system/health`
-    case 'ApplicationUpdate':
-      return `${sonarrBaseUrl}/system/updates`
-    case 'HealthRestored':
-      return `${sonarrBaseUrl}/system/health`
+      return `${sonarrBaseUrl}/series/${series.titleSlug}`
     case 'ManualInteractionRequired':
       return `${sonarrBaseUrl}/activity/queue`
+    case 'Health':
+    case 'ApplicationUpdate':
+    case 'HealthRestored':
     default:
-      return `${sonarrBaseUrl}/dashboard`
+      return sonarrBaseUrl
   }
 }
 
@@ -39,7 +30,7 @@ export function generateTvdbLink(series: Series) {
 export function generateNotificationMessage(payload: SonarrNotificationPayload) {
   const { eventType, series, episodes, downloadInfo, downloadStatusMessages, release } = payload
   const tvdbLink = generateTvdbLink(series)
-  const sonarrLink = generateSonarrLink(eventType, series, episodes)
+  const sonarrLink = generateSonarrLink(eventType, series)
   const links = [`TVDB: ${tvdbLink}`, sonarrLink && `Sonarr: ${sonarrLink}`].filter(Boolean).join('\n')
 
   switch (eventType) {
