@@ -4,6 +4,7 @@ import { command } from '@/app/registries/chatRegistry/command'
 export default command(
   {
     command: '/debug',
+    usage: '/debug [message]',
     description: 'debug chat with Gemini.',
   },
   async (context) => {

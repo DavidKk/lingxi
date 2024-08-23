@@ -4,6 +4,7 @@ import { command } from '@/app/registries/chatRegistry/command'
 export default command(
   {
     command: '/switch-gpt',
+    usage: '/switch-gpt <name>',
     description: 'switch gpt service.',
   },
   async (context) => {

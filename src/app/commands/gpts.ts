@@ -13,7 +13,6 @@ export default command(
     }
 
     const list = telepathy.listGpts().map((name) => ` - ${name}`)
-    const content = `Available gpts:\n${list.join('\n')}`
-    return content
+    return `Available gpts:\n${list.join('\n')}`
   }
 )

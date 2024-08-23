@@ -5,6 +5,7 @@ import { command } from '@/app/registries/chatRegistry/command'
 export default command(
   {
     command: '/update-capacity',
+    usage: '/update-capacity <capacity>',
     description: 'Update the capacity of the chat history.',
   },
   async (context) => {

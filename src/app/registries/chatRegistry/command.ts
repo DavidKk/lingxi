@@ -9,18 +9,20 @@ export type Command = `/${string}`
 
 export interface CommandParams {
   command: Command
+  usage?: string
   description: string
   reply?: Yes
 }
 
 export interface CommandMiddlewareFactory extends ChatMiddlewareFactory {
   command: Command
+  usage?: string
   description: string
 }
 
 const logger = new Logger({ showTime: true })
 export function command(params: CommandParams, handle: ChatHandle): CommandMiddlewareFactory {
-  const { command, description, reply } = params
+  const { command, usage, description, reply } = params
   if (command.charAt(0) !== '/') {
     throw new Error('Command name must start with "/"')
   }
@@ -55,5 +57,5 @@ export function command(params: CommandParams, handle: ChatHandle): CommandMiddl
   )
 
   logger.info(`Register command "<Bold:${command}>"`)
-  return Object.assign(middleware, { command, description })
+  return Object.assign(middleware, { command, usage, description })
 }

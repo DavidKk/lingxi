@@ -201,9 +201,14 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
         description: 'list all commands.',
       },
       async () => {
-        const usages = [...commands, helpCommand].map(({ command, description }) => `- ${command} ${description ? `"${description}"` : ''}`)
-        const content = `Available commands:\n${usages.join('\n')}`
-        return content
+        const finalCommands = [...commands, helpCommand]
+        const usages = finalCommands.map((item, index) => {
+          const No = index + 1
+          const { command, usage, description } = item
+          return `${No}. ${usage || command} - ${description ? `"${description}"` : ''}`
+        })
+
+        return `Available commands:\n${usages.join('\n')}`
       }
     )
 
