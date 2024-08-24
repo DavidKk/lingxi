@@ -7,13 +7,13 @@ import { Gemini } from './services/Gemini'
 const app = new App()
 app.regsiterNotifier(
   new Apprise({
-    serverUrl: process.env.APPRISE_SERVER_URL,
+    serverUrl: process.env.APPRISE_SERVER_URL!,
   }),
   new Smtp({
-    host: process.env.EMAIL_SMTP_HOST,
+    host: process.env.EMAIL_SMTP_HOST!,
     auth: {
-      user: process.env.EMAIL_SMTP_USER,
-      pass: process.env.EMAIL_SMTP_PASS,
+      user: process.env.EMAIL_SMTP_USER!,
+      pass: process.env.EMAIL_SMTP_PASS!,
     },
   })
 )

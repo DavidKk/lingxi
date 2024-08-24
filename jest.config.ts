@@ -6,7 +6,7 @@ export default async (): Promise<Config.InitialOptions> => {
   return {
     skipFilter: true,
     testTimeout: TIMEOUT,
-    projects: ['<rootDir>/jest.config.unittest.ts'],
+    projects: ['<rootDir>/jest.config.unittest.ts', '<rootDir>/jest.config.typetest.ts'],
     coverageReporters: ['text', 'cobertura', 'html'],
     collectCoverageFrom: ['<rootDir>/src/**/*.ts', '!<rootDir>/src/**/*.d.ts'],
   }

@@ -43,7 +43,7 @@ export function generateTvdbLink(series: Series) {
     return ''
   }
 
-  return `${THE_TVDB_SERIES_BASE_URL}/${titleSlug}`
+  return THE_TVDB_SERIES_BASE_URL`${titleSlug}`
 }
 
 export function generateNotificationMessage(payload: SonarrNotificationPayload): string {
@@ -59,7 +59,7 @@ export function generateNotificationMessage(payload: SonarrNotificationPayload):
       return ''
     }
 
-    return `（第 ${episodes[0].seasonNumber} 季，第 ${episodes[0].episodeNumber} 集）`
+    return `(Season ${episodes[0].seasonNumber}, Episode ${episodes[0].episodeNumber})`
   }
 
   const formatSeriesInfo = (action: string) => {
@@ -67,31 +67,31 @@ export function generateNotificationMessage(payload: SonarrNotificationPayload):
   }
 
   if (isGrabPayload(payload)) {
-    return `抓取通知\n${formatSeriesInfo('抓取')}`
+    return `Grab Notification\n${formatSeriesInfo('Grab')}`
   }
 
   if (isDownloadPayload(payload)) {
-    return `下载通知\n${formatSeriesInfo('下载')}`
+    return `Download Notification\n${formatSeriesInfo('Download')}`
   }
 
   if (isManualInteractionRequiredPayload(payload)) {
     const statusMessages = payload.downloadStatusMessages.map((msg) => `${msg.title}: ${msg.messages.join(', ')}`).join('\n')
-    return `需要手动处理\n${statusMessages}\n${linkContent}`
+    return `Manual Interaction Required\n${statusMessages}\n${linkContent}`
   }
 
   const eventDescriptions: Record<string, string> = {
-    Test: `测试通知: ${series.title}`,
-    Download: `下载通知: ${series.title}`,
-    Rename: `重命名通知: ${series.title}`,
-    SeriesAdd: `添加系列: ${series.title}（年份：${series.year}）`,
-    SeriesDelete: `删除系列: ${series.title}`,
-    EpisodeFileDelete: `删除剧集文件: ${episodes[0]?.title}${formatEpisodeInfo(episodes)}`,
-    Health: `健康检查完成。状态: 正常`,
-    ApplicationUpdate: `应用更新检测: ${payload.instanceName}`,
-    HealthRestored: `健康状态恢复正常。状态: 正常`,
+    Test: `Test Notification: ${series.title}`,
+    Download: `Download Notification: ${series.title}`,
+    Rename: `Rename Notification: ${series.title}`,
+    SeriesAdd: `Series Added: ${series.title} (Year: ${series.year})`,
+    SeriesDelete: `Series Deleted: ${series.title}`,
+    EpisodeFileDelete: `Episode File Deleted: ${episodes[0]?.title}${formatEpisodeInfo(episodes)}`,
+    Health: `Health Check Complete. Status: Normal`,
+    ApplicationUpdate: `Application Update Detected: ${payload.instanceName}`,
+    HealthRestored: `Health Status Restored. Status: Normal`,
   }
 
-  return `${eventDescriptions[eventType] || `未知事件类型: ${eventType}`}\n${sonarrLinkContent}`
+  return `${eventDescriptions[eventType] || `Unknown Event Type: ${eventType}`}\n${sonarrLinkContent}`
 }
 
 export function isSeries(series: any): series is Series {
