@@ -15,7 +15,7 @@ export interface SmtpAuth {
   pass: string
 }
 
-export interface StmpOptions extends CoreServiceOptions {
+export interface SmtpOptions extends CoreServiceOptions {
   /* SMTP 服务器主机名 */
   host: string
   /* SMTP 服务器端口（可选），默认值为 465 */
@@ -46,7 +46,7 @@ export class Smtp extends Notifier {
   /** 收件人邮件地址 */
   protected toEmail: string
 
-  constructor(options: StmpOptions) {
+  constructor(options: SmtpOptions) {
     super(options)
 
     const { host, port = 465, secure = true, auth, fromEmail = auth.user, toEmail = auth.user } = options
