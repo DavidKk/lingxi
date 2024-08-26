@@ -1,6 +1,6 @@
 import {
   generateRadarrLink,
-  generateIMDBLink,
+  generateIMDbLink,
   generateNotificationMessage,
   isMovie,
   isMovieFile,
@@ -50,16 +50,16 @@ describe('generateRadarrLink', () => {
   })
 })
 
-describe('generateIMDBLink', () => {
+describe('generateIMDbLink', () => {
   test('should generate correct TMDB link', () => {
     const movie = { imdbId: 'tt550' } as Movie
-    const link = generateIMDBLink(movie)
+    const link = generateIMDbLink(movie)
     expect(link).toBe('https://www.imdb.com/title/tt550')
   })
 
   test('should return empty string when tmdbId is missing', () => {
     const movie: Movie = {} as Movie
-    const link = generateIMDBLink(movie)
+    const link = generateIMDbLink(movie)
     expect(link).toBe('')
   })
 })

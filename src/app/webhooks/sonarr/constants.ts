@@ -1,1 +1,1 @@
-export const THE_TVDB_SERIES_BASE_URL = (_: TemplateStringsArray, titleSlug: string) => `https://www.thetvdb.com/series/${titleSlug}`
+export const IMDB_BASE_URL = (_: TemplateStringsArray, imdbId: string) => `https://www.imdb.com/title/${imdbId}`

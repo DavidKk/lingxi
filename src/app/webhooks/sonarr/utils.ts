@@ -1,4 +1,4 @@
-import { THE_TVDB_SERIES_BASE_URL } from './constants'
+import { IMDB_BASE_URL } from './constants'
 import type {
   SonarrNotificationPayload,
   Series,
@@ -37,22 +37,22 @@ export function generateSonarrLink(eventType: EventType, series: Series) {
   }
 }
 
-export function generateTvdbLink(series: Series) {
-  const { titleSlug } = series
-  if (!titleSlug) {
+export function generateIMDbLink(series: Series) {
+  const { imdbId } = series
+  if (!imdbId) {
     return ''
   }
 
-  return THE_TVDB_SERIES_BASE_URL`${titleSlug}`
+  return IMDB_BASE_URL`${imdbId}`
 }
 
 export function generateNotificationMessage(payload: SonarrNotificationPayload): string {
   const { eventType, series, episodes } = payload
-  const tvdbLink = generateTvdbLink(series)
+  const imdbLink = generateIMDbLink(series)
   const sonarrLink = generateSonarrLink(eventType, series)
-  const tvdbLinkContent = tvdbLink ? `TVDB: ${tvdbLink}` : ''
+  const imdbLinkContent = imdbLink ? `IMDb: ${imdbLink}` : ''
   const sonarrLinkContent = sonarrLink ? `Sonarr: ${sonarrLink}` : ''
-  const linkContent = [tvdbLinkContent, sonarrLinkContent].filter(Boolean).join('\n')
+  const linkContent = [imdbLinkContent, sonarrLinkContent].filter(Boolean).join('\n')
 
   const formatEpisodeInfo = (episodes: Episode[]) => {
     if (!episodes?.length) {

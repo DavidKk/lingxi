@@ -26,7 +26,7 @@ export function generateRadarrLink(eventType: EventType, movie: Movie) {
   }
 }
 
-export function generateIMDBLink(movie: Movie) {
+export function generateIMDbLink(movie: Movie) {
   const { imdbId } = movie
   if (!imdbId) {
     return ''
@@ -37,7 +37,7 @@ export function generateIMDBLink(movie: Movie) {
 
 export function generateNotificationMessage(payload: RadarrNotificationPayload): string {
   const { eventType, movie, movieFile } = payload
-  const imdbLink = generateIMDBLink(movie)
+  const imdbLink = generateIMDbLink(movie)
   const radarrLink = generateRadarrLink(eventType, movie)
   const imdbLinkContent = imdbLink ? `IMDb: ${imdbLink}` : ''
   const radarrLinkContent = radarrLink ? `Radarr: ${radarrLink}` : ''

@@ -1,6 +1,6 @@
 import {
   generateSonarrLink,
-  generateTvdbLink,
+  generateIMDbLink,
   generateNotificationMessage,
   isSeries,
   isEpisode,
@@ -54,16 +54,16 @@ describe('generateSonarrLink', () => {
   })
 })
 
-describe('generateTvdbLink', () => {
-  test('should generate correct TVDB link', () => {
-    const series = { titleSlug: 'breaking-bad' } as Series
-    const link = generateTvdbLink(series)
-    expect(link).toBe('https://www.thetvdb.com/series/breaking-bad')
+describe('generateIMDbLink', () => {
+  test('should generate correct TMDB link', () => {
+    const series = { imdbId: 'tt550' } as Series
+    const link = generateIMDbLink(series)
+    expect(link).toBe('https://www.imdb.com/title/tt550')
   })
 
-  test('should return empty string when titleSlug is missing', () => {
+  test('should return empty string when tmdbId is missing', () => {
     const series: Series = {} as Series
-    const link = generateTvdbLink(series)
+    const link = generateIMDbLink(series)
     expect(link).toBe('')
   })
 })
@@ -76,6 +76,7 @@ describe('generateNotificationMessage', () => {
   const series = {
     id: 1,
     tvdbId: 550,
+    imdbId: 'tt550',
     title: 'Breaking Bad',
     titleSlug: 'breaking-bad',
     year: 2008,
@@ -107,7 +108,7 @@ describe('generateNotificationMessage', () => {
     const message = generateNotificationMessage(payload)
     expect(message).toContain('Grab Notification')
     expect(message).toContain('Breaking Bad(Season 1, Episode 1)')
-    expect(message).toContain('TVDB: https://www.thetvdb.com/series/breaking-bad')
+    expect(message).toContain('IMDb: https://www.imdb.com/title/tt550')
     expect(message).toContain('Sonarr: http://localhost:8989/series/breaking-bad')
   })
 
