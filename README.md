@@ -1,8 +1,10 @@
-# AI 微信小助手
+# 小助手
 
-基于 Wechaty 开发，打通微信。
+[![中文](https://img.shields.io/badge/%E6%96%87%E6%A1%A3-%E4%B8%AD%E6%96%87-green?style=flat-square&logo=docs)](https://github.com/DavidKk/lingxi/blob/main/README.md) [![English](https://img.shields.io/badge/docs-English-green?style=flat-square&logo=docs)](https://github.com/DavidKk/lingxi/blob/main/README.en.md)
 
-[![中文](https://img.shields.io/badge/%E6%96%87%E6%A1%A3-%E4%B8%AD%E6%96%87-green?style=flat-square&logo=docs)](https://github.com/DavidKk/ai-assistant-wechat/blob/main/README.md) [![English](https://img.shields.io/badge/docs-English-green?style=flat-square&logo=docs)](https://github.com/DavidKk/ai-assistant-wechat/blob/main/README.en.md)
+## 特性
+
+- 基于 Wechaty 开发，打通微信
 
 ## Docker 部署
 

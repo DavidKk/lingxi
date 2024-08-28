@@ -6,7 +6,7 @@
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DavidKk/ai-assistant-wechat.git"
+    "url": "https://github.com/DavidKk/lingxi.git"
   },
   "scripts": {
     "commit": "git-cz",

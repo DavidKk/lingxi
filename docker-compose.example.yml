@@ -1,8 +1,8 @@
 version: '3.8'
 services:
-  ai-assistant-wechat:
-    container_name: ai-assistant-wechat
-    image: ghcr.io/davidkk/ai-assistant-wechat:latest
+  lingxi:
+    container_name: lingxi
+    image: ghcr.io/davidkk/lingxi:latest
     environment:
       # 用户
       - PUID=1000
@@ -38,6 +38,6 @@ services:
       # HTTP 服务端口 (可选)
       - SERVER_PORT=3000
     volumes:
-      - path/to/LingXi.memory-card.json:/ai-assistant-wechat/LingXi.memory-card.json:rw
-      - path/to/logs:/ai-assistant-wechat/logs:rw
-      - path/to/chats:/ai-assistant-wechat/chats:rw
+      - path/to/wechaty.memory-card.json:/app/wechaty.memory-card.json:rw
+      - path/to/logs:/app/logs:rw
+      - path/to/chats:/app/chats:rw
