@@ -36,6 +36,7 @@ export abstract class ChatClientAbstract<T extends Partial<MiddlewareRegistry>, 
   /** 是否应该回复 */
   public abstract shouldReply(context: C): Promise<boolean>
 
+  /** 聊天记录管理类 */
   protected history = new History()
   /** 是否为服务中 */
   protected isServing = false
@@ -60,14 +61,20 @@ export abstract class ChatClientAbstract<T extends Partial<MiddlewareRegistry>, 
     this.listen('message', this.onMessage.bind(this))
   }
 
+  /** 获取聊天记录条数 */
+  public countHistory(context: C) {
+    const { ssid } = context
+    return this.history.count(ssid)
+  }
+
   /** 添加聊天记录 */
   public pushHistory(context: C, record: HistoryRecord) {
     const { ssid } = context
     this.history.push(ssid, record)
   }
 
-  /** 获取聊天记录 */
-  public sliceHistory(context: C) {
+  /** 检索聊天记录 */
+  public retrieveHistory(context: C) {
     const { ssid } = context
     return this.history.slice(ssid, CHAT_SEND_RECORD_COUNT * -1)
   }

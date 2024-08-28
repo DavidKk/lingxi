@@ -1,17 +1,22 @@
 import type { LimitedArray } from '../LimitedArray'
 
 /** 历史记录角色 */
-export type HistoryRole = 'human' | 'system'
+export type HistoryRole = 'user' | 'assistant' | 'system'
 
 /** 历史记录类型 */
 export type HistoryType = 'text' | 'image'
 
+/** 图片内容 */
 export interface HistoryImageContent {
   mimeType: string
   data: string
 }
 
-export type HistoryContent = string | HistoryImageContent
+/** 文本内容 */
+export type HistoryTextContent = string
+
+/** 历史记录内容 */
+export type HistoryContent = HistoryTextContent | HistoryImageContent
 
 /** 历史记录 */
 export interface HistoryRecord {

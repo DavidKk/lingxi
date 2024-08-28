@@ -1,6 +1,6 @@
 import type { HistoryImageContent, HistoryRecord, HistoryRole } from '@/core/libs/History/types'
 import { GEMINI_API_SERVER_CHAT_PATH, GEMINI_API_SERVER_FLASH_PATH } from './constants'
-import type { GeminiChatModel, GeminiContent } from './types'
+import type { GeminiChatModel, GeminiContent, GeminiContentRole } from './types'
 
 export function exchangeModelPath(model: GeminiChatModel) {
   switch (model) {
@@ -44,12 +44,14 @@ export function convertTextToContentPart(content: string) {
   return { text: content }
 }
 
-export function convertRoleToContentRole(role: HistoryRole) {
+export function convertRoleToContentRole(role: HistoryRole): GeminiContentRole {
   switch (role) {
-    case 'system':
+    case 'assistant':
       return 'model'
-    case 'human':
+    case 'user':
       return 'user'
+    case 'system':
+      return 'system'
   }
 }
 

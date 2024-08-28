@@ -4,6 +4,7 @@ import qrcodeTerminal from 'qrcode-terminal'
 import qrcode from 'qrcode'
 import { Telepathy } from '@/core/libs/Telepathy'
 import type { Middleware, MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
+import type { ChatClientAbstract } from '@/core/libs/ChatClientAbstract'
 import type { MiddlewareRegistry as IMiddlewareRegistry, Satisfies } from '@/core/types'
 import { renderQrcodeEmailContent } from '@/core/templates/renderQrcodeEmailContent'
 import { SERVER_NAME } from '@/core/constants/conf'
@@ -17,7 +18,6 @@ import type { HttpMiddleware } from './registries/httpRegistry'
 import { WEBHOOK_BASE_PATH } from './constants/conf'
 import type { CommandMiddlewareFactory, ChatMiddlewareFactory, ChatMiddlewareFactoryPayload } from './registries/chatRegistry'
 import { command, combineChatMiddlewares } from './registries/chatRegistry'
-import type { ChatClientAbstract } from '@/core/libs/ChatClientAbstract'
 
 export type MiddlewareRegistry = Partial<
   Satisfies<

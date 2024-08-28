@@ -35,6 +35,16 @@ export class History extends CoreServiceAbstract {
     this.writers = {}
   }
 
+  /** 获取指定用户的历史记录个数 */
+  public count(ssid: string) {
+    if (!(this.records[ssid] instanceof LimitedArray)) {
+      return 0
+    }
+
+    const records = this.records[ssid]
+    return records.length
+  }
+
   /** 向指定用户的历史记录中添加一条记录 */
   public push(ssid: string, history: HistoryRecord) {
     if (!this.records[ssid]) {

@@ -3,9 +3,10 @@ import type { CoreServiceOptions } from '@/core/libs/CoreServiceAbstract'
 import { GPTAbstract, type GPTAbstractContext } from '@/core/libs/GPTAbstract'
 import { format, withVercelHeader } from '@/core/utils'
 import type { MessageContext } from '@/providers/types'
-import { GenerationConfig, SafetySettings } from './conf'
+import { GenerationConfig, GROUP_CHAT_POLICY, PRIVATE_CHAT_POLICY, SafetySettings } from './conf'
 import type { GeminiChatModel, GeminiContent, GeminiMessageDTO, GeminiRespDTO } from './types'
 import { convertRecordsToContents, exchangeModelPath, isImageMessage } from './utils'
+import { isWeChatyContext } from '@/providers/WeChatyProvider'
 
 export interface ReadStreamOptions {
   /** 分段更新 */
@@ -31,7 +32,7 @@ export class Gemini extends GPTAbstract {
   }
 
   public async chat(context: MessageContext & GPTAbstractContext) {
-    const { user, content, logger, client } = context
+    const { user, content, logger, client } = this.normalizeContext(context)
     if (!this.enableGemini) {
       logger.warn('Gemini is disabled')
       return
@@ -39,8 +40,42 @@ export class Gemini extends GPTAbstract {
 
     logger.info(format(`User ${user} chat with Gemini and said %o`, content))
 
-    const records = client.sliceHistory(context)
+    const records = client.retrieveHistory(context)
     logger.info(`Found ${records.length} history records.`)
+
+    const updateSessionWithSystemInstructions = () => {
+      const { ssid, isGroup, isAdmin } = this.normalizeContext(context)
+
+      // 创建会话
+      this.ensureSession(ssid, {
+        systemSettings: {
+          instructions: isGroup ? GROUP_CHAT_POLICY : PRIVATE_CHAT_POLICY,
+        },
+      })
+
+      // 系统配置一定存在
+      const { instructions } = this.getSessionSystemSettings(ssid)!
+      if (!(typeof instructions === 'string' && instructions)) {
+        logger.warn('Gemini system instructions is empty.')
+        return
+      }
+
+      if (isAdmin) {
+        logger.debug('User is admin, skip system instructions.')
+        return
+      }
+
+      if (records.some((record) => record.role === 'system')) {
+        logger.debug('Gemini system instructions already exists.')
+        return
+      }
+
+      // prepend system chat
+      records.unshift({ role: 'system', user: 'system', type: 'text', content: instructions })
+      logger.info(format(`Prepend system instructions: %o`, instructions))
+    }
+
+    updateSessionWithSystemInstructions()
 
     const contents = convertRecordsToContents(records)
     logger.info(format(`Send to Gemini with messages: %o.`, contents))
@@ -59,7 +94,7 @@ export class Gemini extends GPTAbstract {
       return replyText
     }
 
-    client.pushHistory(context, { role: 'system', type: 'text', user, content: replyText })
+    client.pushHistory(context, { role: 'assistant', type: 'text', user, content: replyText })
     return replyText
   }
 
@@ -116,6 +151,16 @@ export class Gemini extends GPTAbstract {
     }
 
     return text
+  }
+
+  /** 整合成统一上下文 */
+  protected normalizeContext(context: MessageContext & GPTAbstractContext) {
+    if (isWeChatyContext(context)) {
+      const { isStar: isAdmin, isRoom: isGroup, ...rest } = context
+      return { ...rest, isAdmin, isGroup }
+    }
+
+    return context
   }
 
   /** 逐步解析数据 */
