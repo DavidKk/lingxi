@@ -108,15 +108,15 @@ export class Smtp extends Notifier {
   protected createTransporter() {
     const { host, port, secure, auth } = this
     if (!this.host) {
-      throw new Error('stmp host is not set')
+      throw new Error('smtp host is not set')
     }
 
     if (!(this.port && typeof this.port === 'number')) {
-      throw new Error(`stmp port is invalid. port: ${this.port}`)
+      throw new Error(`smtp port is invalid. port: ${this.port}`)
     }
 
     if (!(this.auth && this.auth.user && this.auth.pass)) {
-      throw new Error(`stmp auth is invalid. auth: ${JSON.stringify(this.auth)}`)
+      throw new Error(`smtp auth is invalid. auth: ${JSON.stringify(this.auth)}`)
     }
 
     return nodemailer.createTransport({ host, port, secure, auth })
