@@ -33,6 +33,7 @@ export abstract class GPTAbstract extends CoreServiceAbstract {
       return
     }
 
-    this.sessions.set(ssid, new GPTSession(ssid, options))
+    const session = new GPTSession(ssid, options)
+    this.sessions.set(ssid, session)
   }
 }

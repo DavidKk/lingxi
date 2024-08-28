@@ -59,6 +59,8 @@ export class MiddlewareCoordinator<T> extends CoreServiceAbstract {
           nextCalled = true
           return next()
         })
+      } catch (error) {
+        this.logger.fail(`Middleware execute failed: ${error}`)
       } finally {
         if (nextCalled) {
           return

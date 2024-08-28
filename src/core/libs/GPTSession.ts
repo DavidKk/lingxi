@@ -17,7 +17,7 @@ export class GPTSession extends CoreServiceAbstract {
     super()
 
     this.ssid = ssid
-    this.systemSettings = options?.systemSettings || {}
+    this._systemSettings = options?.systemSettings || {}
   }
 
   public get systemSettings() {
@@ -25,7 +25,11 @@ export class GPTSession extends CoreServiceAbstract {
   }
 
   public set systemSettings(settings) {
-    const { instructions } = settings || {}
+    if (typeof settings === 'object' && settings == null) {
+      return
+    }
+
+    const { instructions } = settings
     if (typeof instructions === 'string') {
       this._systemSettings.instructions = instructions
     }

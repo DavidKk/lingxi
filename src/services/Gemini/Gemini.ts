@@ -46,7 +46,7 @@ export class Gemini extends GPTAbstract {
     const updateSessionWithSystemInstructions = () => {
       const { ssid, isGroup, isAdmin } = this.normalizeContext(context)
 
-      // 创建会话
+      logger.debug('ensure session created')
       this.ensureSession(ssid, {
         systemSettings: {
           instructions: isGroup ? GROUP_CHAT_POLICY : PRIVATE_CHAT_POLICY,
@@ -55,6 +55,8 @@ export class Gemini extends GPTAbstract {
 
       // 系统配置一定存在
       const { instructions } = this.getSessionSystemSettings(ssid)!
+      logger.debug(`Gemini system instructions: ${instructions}`)
+
       if (!(typeof instructions === 'string' && instructions)) {
         logger.warn('Gemini system instructions is empty.')
         return
@@ -78,7 +80,7 @@ export class Gemini extends GPTAbstract {
     updateSessionWithSystemInstructions()
 
     const contents = convertRecordsToContents(records)
-    logger.info(format(`Send to Gemini with messages: %o.`, contents))
+    logger.debug(format(`Send to Gemini with messages: %o.`, contents))
 
     if (!contents.length) {
       logger.warn('Gemini send messages is empty.')
@@ -190,7 +192,7 @@ export class Gemini extends GPTAbstract {
         continue
       }
 
-      logger.info(`Partial data: ${textArray}`)
+      logger.debug(`Partial data: ${textArray}`)
 
       if (textArray.length > existingTexts.length) {
         const deltaArray = textArray.slice(existingTexts.length)
@@ -227,7 +229,7 @@ export class Gemini extends GPTAbstract {
       const data: GeminiMessageDTO = repsonse
       const contents = this.extractText(context, [data])
 
-      logger.info(format(`Extract contents: %o`, contents))
+      logger.debug(format(`Extract contents: %o`, contents))
       return contents
     }
 
@@ -235,7 +237,7 @@ export class Gemini extends GPTAbstract {
       const data: GeminiMessageDTO[] = repsonse
       const contents = this.extractText(context, data)
 
-      logger.info(format(`Extract contents: %o`, contents))
+      logger.debug(format(`Extract contents: %o`, contents))
       return contents
     }
 
