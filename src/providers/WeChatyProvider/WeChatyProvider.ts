@@ -209,7 +209,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
       logger.info(`Heard "${user}" send a image. base64 size: ${stringifyLength(data.length)}.`)
 
       const content = { mimeType, data }
-      this.history.push(ssid, { role: 'assistant', type: 'image', user, content })
+      this.history.push(ssid, { role: 'user', type: 'image', user, content })
       return
     }
   }
