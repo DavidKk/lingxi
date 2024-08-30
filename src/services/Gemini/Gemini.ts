@@ -3,10 +3,10 @@ import type { CoreServiceOptions } from '@/core/libs/CoreServiceAbstract'
 import { GPTAbstract, type GPTAbstractContext } from '@/core/libs/GPTAbstract'
 import { format, withVercelHeader } from '@/core/utils'
 import type { MessageContext } from '@/providers/types'
-import { GenerationConfig, GROUP_CHAT_POLICY, PRIVATE_CHAT_POLICY, SafetySettings } from './conf'
-import type { GeminiChatModel, GeminiContent, GeminiMessageDTO, GeminiRespDTO } from './types'
-import { convertRecordsToContents, exchangeModelPath, isImageMessage } from './utils'
 import { isWeChatyContext } from '@/providers/WeChatyProvider'
+import { GenerationConfig, GROUP_CHAT_POLICY, PRIVATE_CHAT_POLICY, SafetySettings } from './conf'
+import { convertRecordsToContents, exchangeModelPath, isImageMessage } from './utils'
+import type { GeminiChatModel, GeminiContent, GeminiMessageDTO, GeminiRespDTO } from './types'
 
 export interface ReadStreamOptions {
   /** 分段更新 */
@@ -22,7 +22,6 @@ export type GeminiOptions = Omit<CoreServiceOptions, 'name'>
 
 export class Gemini extends GPTAbstract {
   static readonly SUPPORT_MODELS = Object.freeze(['gemini-pro', 'gemini-1.5-flash'])
-
   constructor(options?: GeminiOptions) {
     super({ name: 'gemini', ...options })
   }

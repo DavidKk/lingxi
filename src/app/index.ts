@@ -1,3 +1,3 @@
-import './initializer'
+import './preload'
 
 export * from './App'

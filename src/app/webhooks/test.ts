@@ -1,5 +1,5 @@
 import { format } from '@/core/utils'
-import { api } from '../registries/httpRegistry/api'
+import { api } from '@/app/registries/httpRegistry/api'
 
 export default api('/webhook/test', (context) => {
   const { data, logger } = context

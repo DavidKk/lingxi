@@ -3,15 +3,15 @@ import * as PUPPET from 'wechaty-puppet'
 import type { WechatyOptions } from 'wechaty'
 import type { ContactInterface, ContactSelfInterface, MessageInterface, WechatyInterface } from 'wechaty/impls'
 import type { WechatyEventListeners } from 'wechaty/dist/esm/src/schemas/wechaty-events'
-import type { FileBox } from 'file-box'
+import { FileBox } from 'file-box'
 import { MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
 import { ChatClientAbstract, type ChatClientAbstractMessage } from '@/core/libs/ChatClientAbstract'
 import type { ContextualServiceOptions } from '@/core/libs/ContextualServiceAbstract'
-import { format, stringifyBytes, isYes, stringifyLength } from '@/core/utils'
+import { format, stringifyBytes, isYes, stringifyLength, splitString, executePromisesSequentially } from '@/core/utils'
 import { MAX_FILE_SIZE } from '@/core/constants/conf'
 import type { Yes } from '@/core/types'
-import { isFileBox, isImageMessageContext, isTextMessageContext, replyText, sendFile, sendText } from './utils'
-import { WECHATY_DEFAULT_OPTIONS } from './constants'
+import { MAX_BYTES_SIZE, WECHATY_DEFAULT_OPTIONS } from './constants'
+import { isFileBox, isImageMessageContext, isTextMessageContext } from './types'
 import type { WechatMiddlewareRegistry, WeChatyImageMessageContext, WeChatyMessageContext, WeChatyQrcodeContext, WeChatyTextMessageContext } from './types'
 
 export interface WeChatySayMessage extends ChatClientAbstractMessage {
@@ -21,7 +21,7 @@ export interface WeChatySayMessage extends ChatClientAbstractMessage {
 
 export interface WeChatyReplyMessage extends Omit<ChatClientAbstractMessage, 'content'> {
   shouldReply?: Yes
-  content: string | FileBox | FileBox[] | false | undefined
+  content: string | FileBox | FileBox[] | (string | FileBox)[] | false | undefined
 }
 
 export interface WeChatyProviderOptions extends ContextualServiceOptions {
@@ -82,34 +82,40 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
     }
 
     const { shouldReply, content } = payload
+    const send = async (content: string | FileBox) => {
+      // 发送文件
+      if (isFileBox(content)) {
+        await this.sendFile(context, content)
+        return
+      }
+
+      // 发送文字内容
+      if (typeof content === 'string') {
+        let replied = false
+        if (isYes(shouldReply)) {
+          replied = await this.replyText(context, content)
+        }
+
+        if (replied === false) {
+          await this.sendText(context, content)
+        }
+
+        return
+      }
+    }
 
     // 批量发送文件
     if (Array.isArray(content)) {
-      const files = content.filter((file) => isFileBox(file))
-      for (const file of files) {
-        await sendFile(context, file)
+      for (const item of content) {
+        await send(item)
       }
 
       return
     }
 
-    // 发送文件
-    if (isFileBox(content)) {
-      await sendFile(context, content)
-      return
-    }
-
-    // 发送文字内容
-    if (typeof content === 'string') {
-      let replied = false
-      if (isYes(shouldReply)) {
-        replied = await replyText(context, content)
-      }
-
-      if (replied === false) {
-        await sendText(context, content)
-      }
-
+    // 单条信息发送
+    if (content) {
+      await send(content)
       return
     }
 
@@ -183,6 +189,67 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
 
     await matchContact.say(message)
     this.logger.ok(`Say to ${alias} successed.`)
+  }
+
+  /** 发送文件 */
+  protected async sendFile(context: WeChatyMessageContext, file: FileBox) {
+    const { messager, logger } = context
+    if (!(file instanceof FileBox)) {
+      return false
+    }
+
+    logger.info(`Reply file. file: ${file.name}`)
+    await messager.say(file)
+    return true
+  }
+
+  /** 回复文本 */
+  protected async replyText(context: WeChatyMessageContext, content: string) {
+    const { messager, logger } = context
+    if (!(typeof content === 'string')) {
+      return false
+    }
+
+    logger.info(`Reply message. message: ${content}`)
+
+    const messages = splitString(content, MAX_BYTES_SIZE)
+    const talker = messager.talker()
+    const uid = talker.id
+    const room = messager.room()
+
+    if (!room) {
+      return false
+    }
+
+    const members = await room.memberAll()
+    const member = members.find((member) => member.id === uid)
+
+    if (!member) {
+      return false
+    }
+
+    const chats = messages.map((message) => () => room.say(message, member))
+    await executePromisesSequentially(...chats)
+
+    logger.ok(`Reply message success.`)
+    return true
+  }
+
+  /** 发送文本 */
+  protected async sendText(context: WeChatyMessageContext, content: string) {
+    const { messager, logger } = context
+    if (!(typeof content === 'string')) {
+      return false
+    }
+
+    logger.info(format(`Send text message. %o`, { message: content }))
+
+    const messages = splitString(content, MAX_BYTES_SIZE)
+    const chats = messages.map((message) => () => messager.say(message))
+    await executePromisesSequentially(...chats)
+
+    logger.ok(`Reply text message success.`)
+    return true
   }
 
   /** 聆听聊天日志 */

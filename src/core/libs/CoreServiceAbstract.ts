@@ -1,4 +1,3 @@
-import type { Class } from 'utility-types'
 import { withConfigurable, createSingleton } from '../utils'
 import { SERVER_NAME } from '../constants/conf'
 import { Logger } from './Logger'
@@ -27,10 +26,6 @@ export abstract class CoreServiceAbstract extends withConfigurable<ICoreServiceC
 
     this._name = name || 'anon'
     this.logger = logger instanceof Logger ? logger : CoreServiceAbstract.getConfig().getLogger()
-  }
-
-  protected initService(Service: Class<CoreServiceAbstract>) {
-    return new Service({ name: this._name, logger: this.logger })
   }
 }
 

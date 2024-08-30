@@ -54,7 +54,7 @@ importers:
         version: 1.20.2(rxjs@7.8.1)
       wechaty-puppet-wechat:
         specifier: ^1.18.4
-        version: 1.18.4(brolog@1.14.2)(gerror@1.0.16)(wechaty-puppet@1.20.2(rxjs@7.8.1))
+        version: 1.18.4(brolog@1.14.2)(gerror@1.0.16)(puppeteer-core@19.11.1(typescript@5.5.3))(wechaty-puppet@1.20.2(rxjs@7.8.1))
     devDependencies:
       '@commitlint/cli':
         specifier: ^19.3.0
@@ -951,6 +951,16 @@ packages:
   '@protobufjs/utf8@1.1.0':
     resolution: { integrity: sha512-Vvn3zZrhQZkkBE8LSuW3em98c0FwgO4nxzv6OdSxPKJIEKY2bGbHn+mhGIPerzI4twdxaP8/0+06HBpwf345Lw== }
 
+  '@puppeteer/browsers@0.5.0':
+    resolution: { integrity: sha512-Uw6oB7VvmPRLE4iKsjuOh8zgDabhNX67dzo8U/BB0f9527qx+4eeUs+korU98OhG5C4ubg7ufBgVi63XYwS6TQ== }
+    engines: { node: '>=14.1.0' }
+    hasBin: true
+    peerDependencies:
+      typescript: '>= 4.7.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
+
   '@sinclair/typebox@0.27.8':
     resolution: { integrity: sha512-+Fj43pSMwJs4KRrH/938Uf+uAELIgVBmQzg/q1YG10djyfA3TnrU8N8XzqCh/okZdszqBQTZf96idMfE5lnwTA== }
 
@@ -1511,6 +1521,11 @@ packages:
   chownr@1.1.4:
     resolution: { integrity: sha512-jJ0bqzaylmJtVnNgzTeSOs8DPavpbYgEr/b0YL8/2GO3xJEhInFmhKMUnEJQjZumK7KXGFhUy89PrsJWlakBVg== }
 
+  chromium-bidi@0.4.7:
+    resolution: { integrity: sha512-6+mJuFXwTMU6I3vYLs6IL8A1DyQTPjCfIL971X0aMPVGRbGnNfl6i6Cl0NMbxi2bRYLGESt9T2ZIMRM5PAEcIQ== }
+    peerDependencies:
+      devtools-protocol: '*'
+
   ci-info@3.9.0:
     resolution: { integrity: sha512-NIxF55hv4nSqQswkAeiOi1r83xy8JldOFDTWiug55KBu9Jnblncd2U6ViHmYgHf01TPZS77NJBhBMKdWj9HQMQ== }
     engines: { node: '>=8' }
@@ -1839,6 +1854,9 @@ packages:
   detect-newline@3.1.0:
     resolution: { integrity: sha512-TLz+x/vEXm/Y7P7wn1EJFNLxYpUD4TgMosxY6fAVJUnJMbupHBOncxyWUG9OpTaH9EBD7uFI5LfEgmMOc54DsA== }
     engines: { node: '>=8' }
+
+  devtools-protocol@0.0.1107588:
+    resolution: { integrity: sha512-yIR+pG9x65Xko7bErCUSQaDLrO/P1p3JUzEk7JCU4DowPcGHkTGUGQapcfcLc4qj0UaALwZ+cr0riFgiqpixcg== }
 
   devtools-protocol@0.0.981744:
     resolution: { integrity: sha512-0cuGS8+jhR67Fy7qG3i3Pc7Aw494sb9yG9QgpG97SFVWwolgYjlhJg7n+UaHxOQT30d1TYu/EYe9k01ivLErIg== }
@@ -3328,6 +3346,9 @@ packages:
     resolution: { integrity: sha512-qOOzS1cBTWYF4BH8fVePDBOO9iptMnGUEZwNc/cMWnTV2nVLZ7VoNWEPHkYczZA0pdoA7dl6e7FL659nX9S2aw== }
     engines: { node: '>=16 || 14 >=14.17' }
 
+  mitt@3.0.0:
+    resolution: { integrity: sha512-7dX2/10ITVyqh4aOSVI9gdape+t9l2/8QxHrFmUXu4EEUpdlxl6RudZUPZoc+zuY2hk1j7XxVroIVIan/pD/SQ== }
+
   mixin-object@2.0.1:
     resolution: { integrity: sha512-ALGF1Jt9ouehcaXaHhn6t1yGWRqGaHkPFndtFVHfZXOvkIZ/yoGaSi0AHVTafb3ZBGg4dr/bDwnaEKqCXzchMA== }
     engines: { node: '>=0.10.0' }
@@ -3684,6 +3705,15 @@ packages:
   punycode@2.3.1:
     resolution: { integrity: sha512-vYt7UD1U9Wg6138shLtLOvdAu+8DsC/ilFtEVHcH+wydcSpNE20AfSOduf6MkRFahL5FY7X1oU7nKVZFtfq8Fg== }
     engines: { node: '>=6' }
+
+  puppeteer-core@19.11.1:
+    resolution: { integrity: sha512-qcuC2Uf0Fwdj9wNtaTZ2OvYRraXpAK+puwwVW8ofOhOgLPZyz1c68tsorfIZyCUOpyBisjr+xByu7BMbEYMepA== }
+    engines: { node: '>=14.14.0' }
+    peerDependencies:
+      typescript: '>= 4.7.4'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   puppeteer-extra-plugin-stealth@2.11.2:
     resolution: { integrity: sha512-bUemM5XmTj9i2ZerBzsk2AN5is0wHMNE6K0hXBzBXOzP5m5G3Wl0RHhiqKeHToe/uIH8AoZiGhc1tCkLZQPKTQ== }
@@ -4523,6 +4553,18 @@ packages:
     resolution: { integrity: sha512-7KxauUdBmSdWnmpaGFg+ppNjKF8uNLry8LyzjauQDOVONfFLNKrKvQOxZ/VuTIcS/gge/YNahf5RIIQWTSarlg== }
     engines: { node: ^12.13.0 || ^14.15.0 || >=16.0.0 }
 
+  ws@8.13.0:
+    resolution: { integrity: sha512-x9vcZYTrFPC7aSIbj7sRCYo7L/Xb8Iy+pW0ng0wt2vCJv7M9HOMy0UoN3rr+IFC7hb7vXoqS+P9ktyLLLhO+LA== }
+    engines: { node: '>=10.0.0' }
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
   ws@8.18.0:
     resolution: { integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw== }
     engines: { node: '>=10.0.0' }
@@ -4601,6 +4643,10 @@ packages:
   yargs@15.4.1:
     resolution: { integrity: sha512-aePbxDmcYW++PaqBsJ+HYUFwCdv4LVvdnhBy78E57PIor8/OVvhMrADFFEDh8DHDFRv/O9i3lPhsENjO7QX0+A== }
     engines: { node: '>=8' }
+
+  yargs@17.7.1:
+    resolution: { integrity: sha512-cwiTb08Xuv5fqF4AovYacTFNxk62th7LKJ6BL9IGUpTJrWoU7/7WdQGTP2SjKf1dUNBGzDd28p/Yfs/GI6JrLw== }
+    engines: { node: '>=12' }
 
   yargs@17.7.2:
     resolution: { integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w== }
@@ -5598,6 +5644,22 @@ snapshots:
 
   '@protobufjs/utf8@1.1.0': {}
 
+  '@puppeteer/browsers@0.5.0(typescript@5.5.3)':
+    dependencies:
+      debug: 4.3.4
+      extract-zip: 2.0.1
+      https-proxy-agent: 5.0.1
+      progress: 2.0.3
+      proxy-from-env: 1.1.0
+      tar-fs: 2.1.1
+      unbzip2-stream: 1.4.3
+      yargs: 17.7.1
+    optionalDependencies:
+      typescript: 5.5.3
+    transitivePeerDependencies:
+      - supports-color
+    optional: true
+
   '@sinclair/typebox@0.27.8': {}
 
   '@sinonjs/commons@3.0.1':
@@ -6216,6 +6278,12 @@ snapshots:
 
   chownr@1.1.4: {}
 
+  chromium-bidi@0.4.7(devtools-protocol@0.0.1107588):
+    dependencies:
+      devtools-protocol: 0.0.1107588
+      mitt: 3.0.0
+    optional: true
+
   ci-info@3.9.0: {}
 
   cjs-module-lexer@1.3.1: {}
@@ -6567,6 +6635,9 @@ snapshots:
   detect-indent@6.1.0: {}
 
   detect-newline@3.1.0: {}
+
+  devtools-protocol@0.0.1107588:
+    optional: true
 
   devtools-protocol@0.0.981744: {}
 
@@ -8395,6 +8466,9 @@ snapshots:
 
   minipass@7.1.2: {}
 
+  mitt@3.0.0:
+    optional: true
+
   mixin-object@2.0.1:
     dependencies:
       for-in: 0.1.8
@@ -8714,55 +8788,78 @@ snapshots:
 
   punycode@2.3.1: {}
 
-  puppeteer-extra-plugin-stealth@2.11.2(puppeteer-extra@3.3.6(puppeteer@13.7.0)):
+  puppeteer-core@19.11.1(typescript@5.5.3):
+    dependencies:
+      '@puppeteer/browsers': 0.5.0(typescript@5.5.3)
+      chromium-bidi: 0.4.7(devtools-protocol@0.0.1107588)
+      cross-fetch: 3.1.5
+      debug: 4.3.4
+      devtools-protocol: 0.0.1107588
+      extract-zip: 2.0.1
+      https-proxy-agent: 5.0.1
+      proxy-from-env: 1.1.0
+      tar-fs: 2.1.1
+      unbzip2-stream: 1.4.3
+      ws: 8.13.0
+    optionalDependencies:
+      typescript: 5.5.3
+    transitivePeerDependencies:
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+    optional: true
+
+  puppeteer-extra-plugin-stealth@2.11.2(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)):
     dependencies:
       debug: 4.3.5
-      puppeteer-extra-plugin: 3.2.3(puppeteer-extra@3.3.6(puppeteer@13.7.0))
-      puppeteer-extra-plugin-user-preferences: 2.4.1(puppeteer-extra@3.3.6(puppeteer@13.7.0))
+      puppeteer-extra-plugin: 3.2.3(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0))
+      puppeteer-extra-plugin-user-preferences: 2.4.1(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0))
     optionalDependencies:
-      puppeteer-extra: 3.3.6(puppeteer@13.7.0)
+      puppeteer-extra: 3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra-plugin-user-data-dir@2.4.1(puppeteer-extra@3.3.6(puppeteer@13.7.0)):
+  puppeteer-extra-plugin-user-data-dir@2.4.1(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)):
     dependencies:
       debug: 4.3.5
       fs-extra: 10.1.0
-      puppeteer-extra-plugin: 3.2.3(puppeteer-extra@3.3.6(puppeteer@13.7.0))
+      puppeteer-extra-plugin: 3.2.3(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0))
       rimraf: 3.0.2
     optionalDependencies:
-      puppeteer-extra: 3.3.6(puppeteer@13.7.0)
+      puppeteer-extra: 3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra-plugin-user-preferences@2.4.1(puppeteer-extra@3.3.6(puppeteer@13.7.0)):
+  puppeteer-extra-plugin-user-preferences@2.4.1(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)):
     dependencies:
       debug: 4.3.5
       deepmerge: 4.3.1
-      puppeteer-extra-plugin: 3.2.3(puppeteer-extra@3.3.6(puppeteer@13.7.0))
-      puppeteer-extra-plugin-user-data-dir: 2.4.1(puppeteer-extra@3.3.6(puppeteer@13.7.0))
+      puppeteer-extra-plugin: 3.2.3(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0))
+      puppeteer-extra-plugin-user-data-dir: 2.4.1(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0))
     optionalDependencies:
-      puppeteer-extra: 3.3.6(puppeteer@13.7.0)
+      puppeteer-extra: 3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra-plugin@3.2.3(puppeteer-extra@3.3.6(puppeteer@13.7.0)):
+  puppeteer-extra-plugin@3.2.3(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)):
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.3.5
       merge-deep: 3.0.3
     optionalDependencies:
-      puppeteer-extra: 3.3.6(puppeteer@13.7.0)
+      puppeteer-extra: 3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)
     transitivePeerDependencies:
       - supports-color
 
-  puppeteer-extra@3.3.6(puppeteer@13.7.0):
+  puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0):
     dependencies:
       '@types/debug': 4.1.12
       debug: 4.3.5
       deepmerge: 4.3.1
     optionalDependencies:
       puppeteer: 13.7.0
+      puppeteer-core: 19.11.1(typescript@5.5.3)
     transitivePeerDependencies:
       - supports-color
 
@@ -9549,14 +9646,14 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  wechaty-puppet-wechat@1.18.4(brolog@1.14.2)(gerror@1.0.16)(wechaty-puppet@1.20.2(rxjs@7.8.1)):
+  wechaty-puppet-wechat@1.18.4(brolog@1.14.2)(gerror@1.0.16)(puppeteer-core@19.11.1(typescript@5.5.3))(wechaty-puppet@1.20.2(rxjs@7.8.1)):
     dependencies:
       cockatiel: 2.0.2
       md5: 2.3.0
       mime: 3.0.0
       puppeteer: 13.7.0
-      puppeteer-extra: 3.3.6(puppeteer@13.7.0)
-      puppeteer-extra-plugin-stealth: 2.11.2(puppeteer-extra@3.3.6(puppeteer@13.7.0))
+      puppeteer-extra: 3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0)
+      puppeteer-extra-plugin-stealth: 2.11.2(puppeteer-extra@3.3.6(puppeteer-core@19.11.1(typescript@5.5.3))(puppeteer@13.7.0))
       qr-image: 3.2.0
       request: 2.88.2
       rx-queue: 1.0.5
@@ -9716,6 +9813,9 @@ snapshots:
       imurmurhash: 0.1.4
       signal-exit: 3.0.7
 
+  ws@8.13.0:
+    optional: true
+
   ws@8.18.0: {}
 
   ws@8.5.0: {}
@@ -9775,6 +9875,17 @@ snapshots:
       which-module: 2.0.1
       y18n: 4.0.3
       yargs-parser: 18.1.3
+
+  yargs@17.7.1:
+    dependencies:
+      cliui: 8.0.1
+      escalade: 3.1.2
+      get-caller-file: 2.0.5
+      require-directory: 2.1.1
+      string-width: 4.2.3
+      y18n: 5.0.8
+      yargs-parser: 21.1.1
+    optional: true
 
   yargs@17.7.2:
     dependencies:

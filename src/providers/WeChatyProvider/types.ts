@@ -1,3 +1,4 @@
+import { FileBox } from 'file-box'
 import type { MessageInterface } from 'wechaty/impls'
 import type { MiddlewareCoordinator } from '@/core/libs/MiddlewareCoordinator'
 import type { Context, MiddlewareRegistry, Satisfies } from '@/core/types'
@@ -57,3 +58,23 @@ export type WechatMiddlewareRegistry = Satisfies<
     chatMessage: MiddlewareCoordinator<WeChatyMessageContext>
   }
 >
+
+/** 是否为文件 */
+export function isFileBox(target: any): target is FileBox {
+  return target instanceof FileBox
+}
+
+/** 是否为图片上下文 */
+export function isImageMessageContext(context: any): context is WeChatyImageMessageContext {
+  return 'isImageMessage' in context && !!context.isImageMessage
+}
+
+/** 是否为文本上下文 */
+export function isTextMessageContext(context: any): context is WeChatyTextMessageContext {
+  return 'isTextMessage' in context && !!context.isTextMessage
+}
+
+/** 是否为 WeChaty 上下文 */
+export function isWeChatyContext(context: any): context is WeChatyMessageContext {
+  return isImageMessageContext(context) || isTextMessageContext(context)
+}

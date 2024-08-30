@@ -1,8 +1,8 @@
 import { Logger } from '@/core/libs/Logger'
 import { OK } from '@/providers/HttpProvider'
-import { modifyValue, trimCommands } from '@/core/utils'
+import { modifyReturnValue, trimCommands } from '@/core/utils'
 import type { Yes } from '@/core/types'
-import { reply as chat } from './reply'
+import { reply as createReplyMiddlewareFactory } from './reply'
 import type { ChatHandle, ChatMiddlewareFactory } from './types'
 
 export type Command = `/${string}`
@@ -27,7 +27,7 @@ export function command(params: CommandParams, handle: ChatHandle): CommandMiddl
     throw new Error('Command name must start with "/"')
   }
 
-  const middleware = chat(
+  const middleware = createReplyMiddlewareFactory(
     async (context) => {
       const { isStar, isSelf, content, logger, client } = context
       if (!(isStar || isSelf)) {
@@ -51,7 +51,7 @@ export function command(params: CommandParams, handle: ChatHandle): CommandMiddl
       logger.info(message ? `Command content "${message}"` : 'No message content, skip.')
 
       const response = handle({ ...context, content: message })
-      return modifyValue(response, (res) => (res === true ? OK : res))
+      return modifyReturnValue(response, (res) => (res === true ? OK : res))
     },
     { reply }
   )
