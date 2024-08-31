@@ -50,16 +50,16 @@ export function reply(handle: ChatHandle, options?: ReplyOptions): ChatMiddlewar
         return
       }
 
-      logger.info('use kroki to process markdown charts')
-
       // 将 markdown 图表代码块转成图片
-      const results = await processMarkdownToTextAndImages(response)
+      if (process.env.KROKI_SERVER_URL) {
+        logger.info('use kroki to process markdown charts')
 
-      // 回复
-      client.reply<ReplyMessage>(context, {
-        skipShouldReplyCheck,
-        content: results,
-      })
+        const content = await processMarkdownToTextAndImages(response)
+        client.reply<ReplyMessage>(context, { skipShouldReplyCheck, content })
+        return
+      }
+
+      client.reply<ReplyMessage>(context, { skipShouldReplyCheck, content: response })
     }
   }
 }
