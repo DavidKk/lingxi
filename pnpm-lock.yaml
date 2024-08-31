@@ -7,9 +7,6 @@ settings:
 importers:
   .:
     dependencies:
-      axios:
-        specifier: ^1.7.2
-        version: 1.7.2(debug@2.6.9)
       chalk:
         specifier: ^4.0.0
         version: 4.1.2

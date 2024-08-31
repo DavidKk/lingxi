@@ -41,7 +41,7 @@ export function say<T>(pattern: string, handle: HttpHandle<SayReqMessage & T>): 
         }
 
         await client.say<SayMessage>(context, { star, alias, message: resContent })
-        logger.info(`Say completed.`)
+        logger.info(`Say completed`)
 
         return done(context, 200, 'ok')
       },

@@ -17,7 +17,7 @@ export default command(
       logger.info('List log files.')
 
       const logs = await logger.getLogFiles()
-      logger.info(`Found ${logs.length} log files.`)
+      logger.info(`Found ${logs.length} log files`)
 
       const filenames = logs.map((file) => `- ${path.basename(file)}`)
       return filenames.join('\n')
@@ -31,7 +31,7 @@ export default command(
       return 'No log files found.'
     }
 
-    logger.info(`Found ${files.length} log files.`)
+    logger.info(`Found ${files.length} log files`)
     return files
   }
 )

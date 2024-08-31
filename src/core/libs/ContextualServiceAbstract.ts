@@ -15,8 +15,9 @@ export abstract class ContextualServiceAbstract<T extends Record<string, Middlew
 
   /** 创建上下文 */
   protected createContext<P extends Record<string, any>>(passthrough: P) {
-    const { logger: inputLogger } = passthrough || {}
-    const logger = inputLogger instanceof Logger ? inputLogger : this.logger.clone({ traceId: true })
+    const { logger: inLogger } = passthrough || {}
+    const finalLogger = inLogger instanceof Logger ? inLogger : this.logger
+    const logger = finalLogger.clone({ traceId: true, saveFile: true })
     return { logger, ...passthrough }
   }
 }

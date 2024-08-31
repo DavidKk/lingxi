@@ -14,9 +14,9 @@ export default command(
     }
 
     if (!telepathy.setActiveGPT(content)) {
-      return `GPT "${content}" not found.`
+      return `GPT "${content}" not found`
     }
 
-    return `Switch ${content} GPT service completed.`
+    return `Switch ${content} GPT service completed`
   }
 )

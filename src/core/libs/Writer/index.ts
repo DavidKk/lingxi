@@ -71,16 +71,16 @@ export class Writer {
   /** 写内容 */
   public write(content: string) {
     if (calculateTotalByteLength(this.buffer) >= this.maxBufferSize) {
-      this.logger.fail(`buffer size over ${this.maxBufferSize}.`)
+      this.logger.fail(`Buffer size over ${this.maxBufferSize}`)
       return
     }
 
     this.buffer.push(content)
-    this.logger.debug(`push log to buffer. size: ${content.length}.`)
+    this.logger.debug(`Push log to buffer. size: ${content.length}`)
 
     // 正在创建流则无需触发后面逻辑
     if (this.streamCreating) {
-      this.logger.debug('stream creating, skip write.')
+      this.logger.debug('Stream creating, skip write.')
       return
     }
 
@@ -91,7 +91,7 @@ export class Writer {
 
     // 流不存在则创建流
     if (!this.stream) {
-      this.logger.debug(`create new stream.`)
+      this.logger.debug(`Create new stream`)
 
       // 无需等待，只需触发一下即可
       this.createWriteStream()
@@ -112,7 +112,7 @@ export class Writer {
     let shouldCreateNewFile = false
     if (this.stream) {
       if (this.shouldCreateNewFileForDate()) {
-        this.logger.debug(`create new stream due to date changed.`)
+        this.logger.debug(`Create new stream due to date changed`)
 
         // 创建不同日期文件
         this.currentDate = new Date()
@@ -126,7 +126,7 @@ export class Writer {
 
         // 创建相同日期递增文件
         this.currentIndex++
-        this.logger.debug(`create new stream due to size changed.`)
+        this.logger.debug(`Create new stream due to size changed`)
       }
 
       // 如果有写入流则结束之前的写入流
@@ -142,7 +142,7 @@ export class Writer {
     // 如果 index 都超过最大文件数则肯定有 BUG
     if (shouldCreateNewFile && (await this.isOverNumber())) {
       this.streamCreating = false
-      throw new Error(`The number of files is over ${this.maxFileNumber}.`)
+      throw new Error(`The number of files is over ${this.maxFileNumber}`)
     }
 
     await ensureFile(file)
@@ -150,11 +150,11 @@ export class Writer {
     // 创建写入流
     this.stream = fs.createWriteStream(file, { flags: 'a' })
     const handleError = (error: Error) => {
-      this.logger.fail(`fail writing to file.\n${error}`)
+      this.logger.fail(`Fail writing to file.\n${error}`)
     }
 
     const handleFinish = () => {
-      this.logger.debug(`file finish.`)
+      this.logger.debug(`File finish`)
       this.stream = null
     }
 
@@ -168,18 +168,18 @@ export class Writer {
   protected flush() {
     // 正在写入
     if (this.flushing) {
-      this.logger.debug('data flushing, skip flush')
+      this.logger.debug('Data flushing, skip flush')
       return
     }
 
     // 不可写或不存在写入流
     if (!(this.stream && this.stream.writable)) {
-      this.logger.debug(`Stream not found or can not write file, skip.`)
+      this.logger.debug(`Stream not found or can not write file, skip`)
       return
     }
 
     this.flushing = true
-    this.logger.debug(`start data flushing`)
+    this.logger.debug(`Start data flushing`)
 
     /** 是否达到缓存高位区 */
     let ok = true
@@ -211,8 +211,10 @@ export class Writer {
   }
 
   protected endFlush() {
-    this.logger.debug('end data flushing')
+    this.logger.debug('End data flushing')
+
     this.flushing = false
+
     if (!this.buffer.length && this.stream) {
       this.stream.end(() => {
         this.stream = null
@@ -227,7 +229,7 @@ export class Writer {
       return
     }
 
-    this.logger.debug(`force release stream`)
+    this.logger.debug(`Force release stream`)
 
     // 丢弃流即可无需等待
     this.stream.end()
@@ -239,7 +241,7 @@ export class Writer {
   /** 等待下一次流释放 */
   public async waitNextStreamReleased() {
     await this.waitForNext(STREAM_RELEASED_EVENT_ACTION)
-    this.logger.debug(`stream released`)
+    this.logger.debug(`Stream released`)
   }
 
   /** 等待下一次事件 */

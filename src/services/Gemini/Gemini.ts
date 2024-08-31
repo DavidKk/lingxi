@@ -21,15 +21,14 @@ export interface GeminiChatOptions {
 export type GeminiOptions = Omit<CoreServiceOptions, 'name'>
 
 export class Gemini extends GPTAbstract {
+  static NAME = 'gemini'
   static readonly SUPPORT_MODELS = Object.freeze(['gemini-pro', 'gemini-1.5-flash'])
-  constructor(options?: GeminiOptions) {
-    super({ name: 'gemini', ...options })
-  }
 
   public get enableGemini() {
     return !!process.env.GEMINI_API_SERVER_ENDPOINT
   }
 
+  /** 聊天回复 */
   public async chat(context: MessageContext & GPTAbstractContext) {
     const { user, content, logger, client } = this.normalizeContext(context)
     if (!this.enableGemini) {
@@ -37,15 +36,20 @@ export class Gemini extends GPTAbstract {
       return
     }
 
-    logger.info(format(`User ${user} chat with Gemini and said %o`, content))
+    logger.info(`User "<Bold:${user}> chat with Gemini and said "${content}"`)
 
     const records = client.retrieveHistory(context)
-    logger.info(`Found ${records.length} history records.`)
+    logger.info(`Found ${records.length} history records`)
 
     const updateSessionWithSystemInstructions = () => {
-      const { ssid, isGroup, isAdmin } = this.normalizeContext(context)
+      const { isAdmin, ssid, isGroup } = this.normalizeContext(context)
 
-      logger.debug('ensure session created')
+      if (isAdmin) {
+        logger.debug('User is admin, skip system instructions.')
+        return
+      }
+
+      logger.debug('Ensure session created')
       this.ensureSession(ssid, {
         systemSettings: {
           instructions: isGroup ? GROUP_CHAT_POLICY : PRIVATE_CHAT_POLICY,
@@ -54,15 +58,8 @@ export class Gemini extends GPTAbstract {
 
       // 系统配置一定存在
       const { instructions } = this.getSessionSystemSettings(ssid)!
-      logger.debug(`Gemini system instructions: ${instructions}`)
-
       if (!(typeof instructions === 'string' && instructions)) {
         logger.warn('Gemini system instructions is empty.')
-        return
-      }
-
-      if (isAdmin) {
-        logger.debug('User is admin, skip system instructions.')
         return
       }
 
@@ -79,7 +76,7 @@ export class Gemini extends GPTAbstract {
     updateSessionWithSystemInstructions()
 
     const contents = convertRecordsToContents(records)
-    logger.debug(format(`Send to Gemini with messages: %o.`, contents))
+    logger.debug(format(`Send to Gemini with messages: %o`, contents))
 
     if (!contents.length) {
       logger.warn('Gemini send messages is empty.')
@@ -99,6 +96,7 @@ export class Gemini extends GPTAbstract {
     return replyText
   }
 
+  /** 发送消息（用于通知） */
   public async send(context: MessageContext, contents: GeminiContent[], options?: GeminiChatOptions) {
     const { logger } = context
     if (!(Array.isArray(contents) && contents.length > 0)) {
@@ -139,14 +137,10 @@ export class Gemini extends GPTAbstract {
       throw new Error('Reader not found.')
     }
 
-    const text = await this.processIncrementalStream(context, reader, {
-      onSegmentUpdate: (remainText) => {
-        logger.debug(`The confirmed content is: ${remainText}`)
-      },
-    })
+    const text = await this.processIncrementalStream(context, reader)
 
     if (text) {
-      logger.info(`Chat with Gemini success. content: ${text}`)
+      logger.info(`Gemini reply content:\n${text}`)
     } else {
       logger.warn('Chat with Gemini failed.')
     }
@@ -177,7 +171,7 @@ export class Gemini extends GPTAbstract {
     while (true) {
       const { done, value } = await reader?.read()
       if (done) {
-        logger.info(`Stream reading completed. conetent: ${partialData}`)
+        logger.info(`Stream reading completed. content:\n${partialData}`)
         break
       }
 
@@ -191,14 +185,12 @@ export class Gemini extends GPTAbstract {
         continue
       }
 
-      logger.debug(`Partial data: ${textArray}`)
-
       if (textArray.length > existingTexts.length) {
         const deltaArray = textArray.slice(existingTexts.length)
         existingTexts = textArray
         remainText.push(deltaArray.join(''))
 
-        logger.info(`The confirmed content is: ${remainText.join('')}`)
+        logger.debug(`The confirmed text content is: ${remainText.join('')}`)
 
         if (typeof onSegmentUpdate === 'function') {
           const segmentText = remainText.splice(0).join('')
@@ -226,18 +218,13 @@ export class Gemini extends GPTAbstract {
     // Gemini Flash
     if (typeof repsonse === 'object' && 'candidates' in repsonse) {
       const data: GeminiMessageDTO = repsonse
-      const contents = this.extractText(context, [data])
-
-      logger.debug(format(`Extract contents: %o`, contents))
-      return contents
+      return this.extractText(context, [data])
     }
 
+    // Gemini Normal
     if (Array.isArray(repsonse)) {
       const data: GeminiMessageDTO[] = repsonse
-      const contents = this.extractText(context, data)
-
-      logger.debug(format(`Extract contents: %o`, contents))
-      return contents
+      return this.extractText(context, data)
     }
 
     // 错误处理

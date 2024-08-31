@@ -36,10 +36,10 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
 
   /** 启动 */
   public async start() {
-    await this.loadWebhoks()
+    await this.loadWebhooks()
     await this.httpServer.serve()
 
-    this.applySendScanQRcode()
+    this.loadQrcodeScanningNotify()
     await this.loadCommands()
     await this.loadMentions()
     await super.start()
@@ -56,14 +56,6 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
     this.httpServer && (await this.httpServer.stop())
     this.httpServer && (await this.httpServer.serve())
     await super.restart()
-  }
-
-  /** 注册发送二维码扫描消息 */
-  @Once
-  protected applySendScanQRcode() {
-    const notifiers = this.notifiers.filter((notifier) => notifier.supports.includes('html'))
-    this.use('scanQRCode', this.createQrcodeMiddleware(notifiers))
-    this.logger.info('Apply send scan qrcode middleware.')
   }
 
   /** 创建二维码扫描通知中间件 */
@@ -100,11 +92,24 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
     return { client, gpt, telepathy: this }
   }
 
+  /** 注册发送二维码扫描消息 */
+  @Once
+  protected loadQrcodeScanningNotify() {
+    const notifiers = this.notifiers.filter((notifier) => notifier.supports.includes('html'))
+    for (const notifier of notifiers) {
+      this.logger.info(`Register QRcode scanning notifiers: "<Bold:${notifier.name}>"`)
+    }
+
+    this.use('scanQRCode', this.createQrcodeMiddleware(notifiers))
+    this.logger.debug(`Register <Bold:${notifiers.length}> QRcode scanning notifiers`)
+  }
+
   /** 加载聊天文件 */
+  @Once
   protected async loadMentions() {
     const middlewares = await this.load<ChatMiddlewareFactory>(DEFAULT_MENTIONS_DIR)
     if (!middlewares.length) {
-      this.logger.warn(`no mentions found from ${DEFAULT_MENTIONS_DIR}`)
+      this.logger.warn(`No mentions found from ${DEFAULT_MENTIONS_DIR}`)
       return
     }
 
@@ -114,32 +119,37 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
       client.use('chatMessage', mentionsMiddlewareFactory(payload))
     }
 
-    this.logger.info(`Load ${middlewares.length} mentions.`)
+    this.logger.debug(`Register <Bold:${middlewares.length}> mentions`)
   }
 
   /** 加载指令文件 */
+  @Once
   protected async loadCommands() {
     const middlewares = await this.load<CommandMiddlewareFactory>(DEFAULT_COMMANDS_DIR)
     if (!middlewares.length) {
-      this.logger.warn(`no commands found from ${DEFAULT_COMMANDS_DIR}`)
+      this.logger.warn(`No commands found from ${DEFAULT_COMMANDS_DIR}`)
       return
     }
 
     const helpCommandMiddlewareFactory = this.applyHelpCommand(middlewares)
     const commands = [helpCommandMiddlewareFactory, ...middlewares]
-
     const commandMiddlewareFactory = combineChatMiddlewares(...commands)
+
     for (const client of this.clients) {
       const payload = this.createMiddlewareFactoryPayload(client)
-      client.use('chatMessage', commandMiddlewareFactory(payload))
+      const middlewares = commandMiddlewareFactory(payload)
+      client.use('chatMessage', middlewares)
     }
+
+    this.logger.debug(`Register <Bold:${middlewares.length}> commands`)
   }
 
   /** 加载 webhooks 文件 */
-  protected async loadWebhoks() {
+  @Once
+  protected async loadWebhooks() {
     const middlewares = await this.load<HttpMiddleware<SayMessage>>(DEFAULT_WEBHOOKS_DIR)
     if (!middlewares.length) {
-      this.logger.warn(`no webhooks found from ${DEFAULT_WEBHOOKS_DIR}`)
+      this.logger.warn(`No webhooks found from ${DEFAULT_WEBHOOKS_DIR}`)
       return
     }
 
@@ -154,6 +164,8 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
         this.httpServer.post(pattern, handle)
       }
     }
+
+    this.logger.debug(`Register <Bold:${middlewares.length}> webhooks`)
   }
 
   /** 加载文件 */
@@ -184,7 +196,7 @@ export class App extends Telepathy<MiddlewareRegistry, Notifier, Gpts> {
         return
       }
 
-      this.logger.debug(`Load "${path.relative(__dirname, absPath)}" file`)
+      this.logger.debug(`Import "<Bold:${path.relative(__dirname, absPath)}>" file`)
       const { default: module } = await import(absPath)
       return module
     })

@@ -6,6 +6,7 @@ export default command(
     command: '/debug',
     usage: '/debug [message]',
     description: 'debug chat with Gemini.',
+    skipShouldReplyCheck: true,
   },
   async (context) => {
     const { isSelf, logger, gpt } = context

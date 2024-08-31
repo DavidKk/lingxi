@@ -20,7 +20,8 @@ export interface WeChatySayMessage extends ChatClientAbstractMessage {
 }
 
 export interface WeChatyReplyMessage extends Omit<ChatClientAbstractMessage, 'content'> {
-  shouldReply?: Yes
+  /** 强制跳过判断是否应该回复 */
+  skipShouldReplyCheck?: Yes
   content: string | FileBox | FileBox[] | (string | FileBox)[] | false | undefined
 }
 
@@ -46,8 +47,8 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
     this.wechaty = WechatyBuilder.build(wechatyOptions)
 
     this.middlewares = {
-      scanQRCode: new MiddlewareCoordinator<WeChatyQrcodeContext>({ name: 'QrcodeMiddleware' }),
-      chatMessage: new MiddlewareCoordinator<WeChatyMessageContext>({ name: 'MessageMiddleware' }),
+      scanQRCode: new MiddlewareCoordinator<WeChatyQrcodeContext>(),
+      chatMessage: new MiddlewareCoordinator<WeChatyMessageContext>(),
     }
 
     this.mounted()
@@ -76,51 +77,43 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
 
   /** 回复消息 */
   public async reply<T>(context: WeChatyMessageContext, payload: T & WeChatyReplyMessage) {
-    if (!(await this.shouldReply(context))) {
+    const { skipShouldReplyCheck, content } = payload
+
+    // 无需回复
+    if (!isYes(skipShouldReplyCheck) && !(await this.shouldReply(context))) {
       this.logger.debug('In chat room, but not mention me, skip mention.')
       return
     }
 
-    const { shouldReply, content } = payload
-    const send = async (content: string | FileBox) => {
+    const contents = (Array.isArray(content) ? content : [content]).filter(Boolean)
+    if (!contents?.length) {
+      this.logger.warn(`Reply contents is empty, skip.`)
+      return
+    }
+
+    for (const content of contents) {
       // 发送文件
       if (isFileBox(content)) {
         await this.sendFile(context, content)
-        return
+        continue
       }
 
-      // 发送文字内容
-      if (typeof content === 'string') {
-        let replied = false
-        if (isYes(shouldReply)) {
-          replied = await this.replyText(context, content)
+      // 发送文字
+      if (typeof content === 'string' && content.length) {
+        const replied = await this.replyText(context, content)
+        if (replied !== false) {
+          // 发送成功则跳过
+          continue
         }
 
-        if (replied === false) {
-          await this.sendText(context, content)
-        }
-
-        return
-      }
-    }
-
-    // 批量发送文件
-    if (Array.isArray(content)) {
-      for (const item of content) {
-        await send(item)
+        // 非回复则直接发送文字
+        await this.sendText(context, content)
+        continue
       }
 
-      return
+      // 处理不支持
+      this.logger.warn(`Unknown content reply message fail. content:\n${content}`)
     }
-
-    // 单条信息发送
-    if (content) {
-      await send(content)
-      return
-    }
-
-    // 处理不支持
-    this.logger.fail(`Unknown content reply message fail. content: ${content}.`)
   }
 
   /** 是否应该回复 */
@@ -137,13 +130,13 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
   protected async sayToStar(message: string) {
     const contacts = await this.wechaty.Contact.findAll()
     if (!contacts.length) {
-      this.logger.warn(`Can not find any contacts.`)
+      this.logger.warn(`Can not find any contacts`)
       return
     }
 
     const stars = contacts.filter((contact) => contact.star())
     if (!stars) {
-      this.logger.warn(`Can not find stared contacts.`)
+      this.logger.warn(`Can not find stared contacts`)
       return
     }
 
@@ -157,7 +150,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
       const name = names[index]
       const result = results[index]
       if (result.status === 'fulfilled') {
-        this.logger.ok(`Say to ${name} successed.`)
+        this.logger.ok(`Say to ${name} successed`)
       } else {
         this.logger.fail(`Say to ${name} failed: ${result.reason}`)
       }
@@ -168,7 +161,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
   protected async sayToAlias(alias: string, message: string) {
     const contacts = await this.wechaty.Contact.findAll()
     if (!contacts.length) {
-      this.logger.warn(`Can not find any contacts.`)
+      this.logger.warn(`Can not find any contacts`)
       return
     }
 
@@ -181,36 +174,56 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
     }
 
     if (typeof matchContact === 'undefined') {
-      this.logger.warn(`Can not find contact by alias: ${alias}.`)
+      this.logger.warn(`Can not find contact by alias: ${alias}`)
       return
     }
 
     this.logger.info(`Say to ${alias}: ${message}`)
 
     await matchContact.say(message)
-    this.logger.ok(`Say to ${alias} successed.`)
+    this.logger.ok(`Say to ${alias} successed`)
   }
 
   /** 发送文件 */
   protected async sendFile(context: WeChatyMessageContext, file: FileBox) {
     const { messager, logger } = context
     if (!(file instanceof FileBox)) {
+      logger.warn(`Send file content is empty, skip sendFile`)
       return false
     }
 
-    logger.info(`Reply file. file: ${file.name}`)
+    logger.info(`Send file message. file: ${file.name}`)
     await messager.say(file)
+
+    logger.ok(`Send file message success`)
+    return true
+  }
+
+  /** 发送文本 */
+  protected async sendText(context: WeChatyMessageContext, content: string) {
+    const { messager, logger } = context
+    if (!(typeof content === 'string' && content.length)) {
+      logger.warn(`Send text content is empty, skip sendText`)
+      return false
+    }
+
+    logger.info(`Send text message. ${content}`)
+
+    const messages = splitString(content, MAX_BYTES_SIZE)
+    const chats = messages.map((message) => () => messager.say(message))
+    await executePromisesSequentially(...chats)
+
+    logger.ok(`Send text message success`)
     return true
   }
 
   /** 回复文本 */
   protected async replyText(context: WeChatyMessageContext, content: string) {
     const { messager, logger } = context
-    if (!(typeof content === 'string')) {
+    if (!(typeof content === 'string' && content.length)) {
+      logger.warn(`Reply text content is empty, skip replyText`)
       return false
     }
-
-    logger.info(`Reply message. message: ${content}`)
 
     const messages = splitString(content, MAX_BYTES_SIZE)
     const talker = messager.talker()
@@ -228,27 +241,11 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
       return false
     }
 
+    logger.info(`Reply text message. ${content}`)
     const chats = messages.map((message) => () => room.say(message, member))
     await executePromisesSequentially(...chats)
 
-    logger.ok(`Reply message success.`)
-    return true
-  }
-
-  /** 发送文本 */
-  protected async sendText(context: WeChatyMessageContext, content: string) {
-    const { messager, logger } = context
-    if (!(typeof content === 'string')) {
-      return false
-    }
-
-    logger.info(format(`Send text message. %o`, { message: content }))
-
-    const messages = splitString(content, MAX_BYTES_SIZE)
-    const chats = messages.map((message) => () => messager.say(message))
-    await executePromisesSequentially(...chats)
-
-    logger.ok(`Reply text message success.`)
+    logger.ok(`Reply message success`)
     return true
   }
 
@@ -261,7 +258,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
         return
       }
 
-      logger.info(`Heard "${user}" said "${content}"`)
+      logger.debug(`Heard "${user}" said "${content}"`)
       this.history.push(ssid, { role: 'user', type: 'text', user, content })
       return
     }
@@ -273,7 +270,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
         return
       }
 
-      logger.info(`Heard "${user}" send a image. base64 size: ${stringifyLength(data.length)}.`)
+      logger.debug(`Heard "${user}" send a image. base64 size: ${stringifyLength(data.length)}`)
 
       const content = { mimeType, data }
       this.history.push(ssid, { role: 'user', type: 'image', user, content })
@@ -342,8 +339,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
   /** 处理图片信息 */
   protected async onImageMessage(context: WeChatyImageMessageContext) {
     const { user, fileSize, logger } = context
-    logger.info(`Received image message by "${user}". size: ${stringifyBytes(fileSize)}.`)
-
+    logger.info(`Received image message by "${user}". size: ${stringifyBytes(fileSize)}`)
     this.middlewares.chatMessage.execute(context)
   }
 
@@ -360,7 +356,7 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
       return
     }
 
-    logger.info(`Received message "${content}" by "${user}".`)
+    logger.info(`Received message "${content}" by "${user}"`)
     this.middlewares.chatMessage.execute(context)
   }
 
@@ -408,23 +404,23 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
 
   /** 处理登录后事件 */
   protected onLogin(user: ContactSelfInterface) {
-    this.logger.info(`${user} logined.`)
+    this.logger.info(`${user} logined`)
     this.isLoginning = false
   }
 
   /** 处理退出事件 */
   protected onLogout(user: ContactSelfInterface) {
-    this.logger.info(`${user} logout.`)
+    this.logger.info(`${user} logout`)
   }
 
   /** 处理错误事件 */
   protected onError(error: Error) {
-    this.logger.fail(`Some errors occurred in Wechaty\n${error}.`, { verbose: false })
+    this.logger.fail(`Some errors occurred in Wechaty\n${error}`, { verbose: false })
   }
 
   /** 处理心跳事件 */
   protected async onHeartbeat() {
-    this.logger.debug(format(`Ping wechat. status: %j.`, this.status))
+    this.logger.debug(format(`Ping wechat. status: %j`, this.status))
 
     const { started, logined, loginning } = this.status
     if (started && !logined && !loginning) {
@@ -449,12 +445,13 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
     const isStar = !!talker.star()
     const isRoom = !!room
     const ssid = room?.id || talker.id
-    const logger = this.logger
-    const meta = { ssid, user, isRoom, isSelf, isStar, messager, logger }
 
+    // 创建通用上下文
+    const meta = this.createContext({ ssid, user, isRoom, isSelf, isStar, messager })
+    const logger = meta.logger
+
+    // 创建带图片的上下文
     if (messageType === PUPPET.types.Message.Image) {
-      logger.debug('Received image message.')
-
       const context = await this.createImageContext(messager)
       if (!context) {
         logger.warn('Image size is too large, skip.')
@@ -462,13 +459,16 @@ export class WeChatyProvider extends ChatClientAbstract<WechatMiddlewareRegistry
       }
 
       const imageContext: WeChatyImageMessageContext = { ...meta, ...context }
+      logger.debug('Image context created.')
+
       return imageContext
     }
 
-    logger.debug('Received text message.')
-
+    // 创建文本上下文
     const context = await this.createTextContext(messager)
     const textContext: WeChatyTextMessageContext = { ...meta, ...context }
+    logger.debug('Text context created.')
+
     return textContext
   }
 

@@ -83,13 +83,15 @@ export abstract class ChatClientAbstract<T extends Partial<MiddlewareRegistry>, 
   public clearHistory(context: C) {
     const { ssid } = context
     this.history.clear(ssid)
-    this.logger.ok(`Clear history records.`)
+
+    this.logger.ok(`Clear history records`)
   }
 
   /** 更新聊天记录容量 */
   public updateCapacityHistory(context: C, size: number) {
     const { ssid } = context
     this.history.updateCapacity(ssid, size)
-    this.logger.ok(`Update history capacity to ${size}.`)
+
+    this.logger.ok(`Update history capacity to ${size}`)
   }
 }

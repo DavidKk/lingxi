@@ -37,7 +37,7 @@ $ pnpm dev
 
 ### 环境变量 (ENV)
 
-**APPRISE_SERVER_URL**: Apprise 服务地址
+**APPRISE_ENDPOINT**: Apprise 服务地址
 
 微信登录需要扫描二维码，通过配置 Apprise，可以将登录信息统一发送到邮件中。
 

@@ -31,6 +31,7 @@ export interface SmtpOptions extends CoreServiceOptions {
 }
 
 export class Smtp extends Notifier {
+  static NAME = 'smtp'
   static contentTypeSupports: ContentType[] = ['html', 'text', 'markdown']
 
   /* SMTP 服务器主机名 */

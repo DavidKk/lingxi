@@ -1,7 +1,9 @@
 declare namespace NodeJS {
   interface ProcessEnv {
     /** Apprise 服务地址 */
-    APPRISE_SERVER_URL?: string
+    APPRISE_ENDPOINT?: string
+    /** Kroki 服务地址（可选，官方为 "https://kroki.io"） */
+    KROKI_SERVER_URL?: string
     /** 微信登录发送通知至邮箱 */
     EMAIL_NOTIFY_TO?: string
     /** SMTP 用户名 */

@@ -37,7 +37,7 @@ If the Gemini proxy is deployed to Vercel, you need to set the access secret.
 
 ### Environment Variables (ENV)
 
-**APPRISE_SERVER_URL**: Apprise service address
+**APPRISE_ENDPOINT**: Apprise service address
 
 WeChat login requires scanning the QR code. By configuring Apprise, the login information can be sent to the email in a unified manner.
 

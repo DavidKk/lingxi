@@ -86,7 +86,7 @@ export class Logger extends withConfigurable<ILoggerConfiguration, Record<never,
     this.showName = typeof showName === 'boolean' ? showName : !!process.env.ci
     this.showTime = typeof showTime === 'boolean' ? showTime : !!process.env.ci
     this.traceId = inputTraceId === true ? traceId() : typeof inputTraceId === 'string' ? inputTraceId : ''
-    this.saveFile = typeof saveFile === 'boolean' ? saveFile : !process.env.ci
+    this.saveFile = typeof saveFile === 'boolean' ? saveFile : false
 
     this.ok = this.register('greenBright', { prefix: this.prefix('[OK]'), verbose: false })
     this.info = this.register('cyanBright', { prefix: this.prefix('[INFO]'), verbose: false })

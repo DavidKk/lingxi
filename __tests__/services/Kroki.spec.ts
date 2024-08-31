@@ -1,14 +1,20 @@
-import { Kroki } from '@/services/Kroki'
-import { KROKI_ENDPOINT } from '@/services/Kroki/constants'
+import { Kroki, isKrokiLanguage } from '@/services/Kroki'
 
 describe('Kroki', () => {
-  const krokiInstance = new Kroki()
+  let krokiInstance: Kroki
 
   beforeAll(() => {
+    process.env.KROKI_SERVER_URL = 'https://kroki.io'
+    krokiInstance = new Kroki({
+      serverUrl: process.env.KROKI_SERVER_URL,
+    })
+
     global.fetch = jest.fn()
   })
 
   afterAll(() => {
+    delete process.env.KROKI_SERVER_URL
+
     jest.clearAllMocks()
   })
 
@@ -80,7 +86,7 @@ Alice -> Bob: Hello
 
     const buffer = await krokiInstance['fetchKrokiImage'](language, code)
     expect(buffer).toEqual(mockBuffer)
-    expect(fetch).toHaveBeenCalledWith(`${KROKI_ENDPOINT}/${language}/png`, {
+    expect(fetch).toHaveBeenCalledWith(`${process.env.KROKI_SERVER_URL}/${language}/png`, {
       method: 'POST',
       body: code,
       headers: { 'Content-Type': 'text/plain' },
@@ -104,5 +110,49 @@ graph TD
     const results = await krokiInstance.processMarkdown(markdown)
     expect(results[0]).toBe('# Title')
     expect(results[1]).toBe('```mermaid\ngraph TD\n  A-->B\n```')
+  })
+
+  it('should allow only supported chart languages', () => {
+    const validLanguage = 'mermaid'
+    const invalidLanguage = 'unsupportedLang'
+
+    expect(isKrokiLanguage(validLanguage)).toBe(true)
+    expect(isKrokiLanguage(invalidLanguage)).toBe(false)
+  })
+
+  it('should throw an error for unsupported languages', async () => {
+    const unsupportedLanguage = 'unsupportedLang'
+    const code = 'some code'
+    const promise = krokiInstance['fetchKrokiImage'](unsupportedLanguage, code)
+    await expect(promise).rejects.toThrow(`Unsupported language: ${unsupportedLanguage}`)
+  })
+
+  it('should process markdown correctly and generate image parts with hashed filenames', async () => {
+    const encoder = new TextEncoder()
+    const mockBuffer = encoder.encode('mock image data').buffer
+
+    jest.isMockFunction(fetch) &&
+      (fetch as jest.Mock).mockResolvedValueOnce({
+        ok: true,
+        arrayBuffer: async () => mockBuffer,
+      })
+
+    const markdown = `
+# Title
+
+\`\`\`mermaid
+graph TD
+  A-->B
+\`\`\`
+    `
+
+    const results = await krokiInstance.processMarkdown(markdown)
+    expect(results).toEqual([
+      '# Title',
+      {
+        file: expect.any(String),
+        content: expect.any(ArrayBuffer),
+      },
+    ])
   })
 })

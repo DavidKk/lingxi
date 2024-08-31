@@ -12,20 +12,29 @@ export interface ICoreServiceConfiguration {
 }
 
 export abstract class CoreServiceAbstract extends withConfigurable<ICoreServiceConfiguration, Record<never, unknown>>(class {}) {
-  protected _name: string
+  static NAME = 'AnonymousService'
+
+  protected _name?: string
   protected logger: Logger
 
   public get name() {
-    return this._name
+    if (this._name) {
+      return this._name
+    }
+
+    return Object.getPrototypeOf(this).constructor.NAME
   }
 
   constructor(options?: CoreServiceOptions) {
     super()
 
     const { name, logger } = options || {}
+    const configuration = CoreServiceAbstract.getConfig()
+    this.logger = logger instanceof Logger ? logger : configuration.getLogger()
 
-    this._name = name || 'anon'
-    this.logger = logger instanceof Logger ? logger : CoreServiceAbstract.getConfig().getLogger()
+    if (name) {
+      this._name = name
+    }
   }
 }
 

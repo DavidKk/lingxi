@@ -41,7 +41,7 @@ export class HttpProvider extends ContextualServiceAbstract<HttpProviderMiddlewa
     return new Promise<void>((resolve) => {
       this.server = http.createServer(this.handleServer.bind(this))
       this.server.listen(this.port, () => {
-        this.logger.ok(`Server is running on port ${this.port}`)
+        this.logger.ok(`Server is running on port <Bold:${this.port}>`)
         resolve()
       })
     })
@@ -104,9 +104,8 @@ export class HttpProvider extends ContextualServiceAbstract<HttpProviderMiddlewa
     const parsedUrl = Url.parse(url, true)
     const query = parsedUrl.query
     const headers = req.headers
-    const logger = this.logger.clone({ traceId: true })
     const params = {}
-    const context = this.createContext({ req, res, logger, url, query, headers, params })
+    const context = this.createContext({ req, res, url, query, headers, params })
     this.handleRouter(context)
   }
 
@@ -187,7 +186,7 @@ export class HttpProvider extends ContextualServiceAbstract<HttpProviderMiddlewa
     try {
       return JSON.parse(body)
     } catch (error) {
-      this.logger.fail(`Parse json failed. Body: "${body}".`)
+      this.logger.fail(`Parse json failed. Body: "${body}"`)
       return {}
     }
   }

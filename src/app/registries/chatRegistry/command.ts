@@ -1,6 +1,6 @@
 import { Logger } from '@/core/libs/Logger'
 import { OK } from '@/providers/HttpProvider'
-import { modifyReturnValue, trimCommands } from '@/core/utils'
+import { isYes, modifyReturnValue, trimCommands } from '@/core/utils'
 import type { Yes } from '@/core/types'
 import { reply as createReplyMiddlewareFactory } from './reply'
 import type { ChatHandle, ChatMiddlewareFactory } from './types'
@@ -11,7 +11,7 @@ export interface CommandParams {
   command: Command
   usage?: string
   description: string
-  reply?: Yes
+  skipShouldReplyCheck?: Yes
 }
 
 export interface CommandMiddlewareFactory extends ChatMiddlewareFactory {
@@ -22,29 +22,15 @@ export interface CommandMiddlewareFactory extends ChatMiddlewareFactory {
 
 const logger = new Logger({ showTime: true })
 export function command(params: CommandParams, handle: ChatHandle): CommandMiddlewareFactory {
-  const { command, usage, description, reply } = params
+  const { command, usage, description, skipShouldReplyCheck } = params
+
   if (command.charAt(0) !== '/') {
     throw new Error('Command name must start with "/"')
   }
 
-  const middleware = createReplyMiddlewareFactory(
+  const replyMiddleware = createReplyMiddlewareFactory(
     async (context) => {
-      const { isStar, isSelf, content, logger, client } = context
-      if (!(isStar || isSelf)) {
-        logger.debug('Not star or not self, skip.')
-        return
-      }
-
-      if (!(await client.shouldReply(context))) {
-        logger.debug('Not should reply, skip.')
-        return
-      }
-
-      if (!content.startsWith(command)) {
-        logger.debug(`Not match command "${command}", skip.`)
-        return
-      }
-
+      const { content, logger } = context
       logger.info(`Hit command "${command}"`)
 
       const message = trimCommands(content, command)
@@ -53,9 +39,40 @@ export function command(params: CommandParams, handle: ChatHandle): CommandMiddl
       const response = handle({ ...context, content: message })
       return modifyReturnValue(response, (res) => (res === true ? OK : res))
     },
-    { reply }
+    { skipShouldReplyCheck }
   )
 
-  logger.info(`Register command "<Bold:${command}>"`)
-  return Object.assign(middleware, { command, usage, description })
+  const commandMiddlewareFactory: ChatMiddlewareFactory = (payload) => {
+    const applyReplyMiddleware = replyMiddleware(payload)
+    const { client } = payload
+
+    return async function commandMiddleware(context, next) {
+      const { isStar, isSelf, content, logger } = context
+      if (!(isStar || isSelf)) {
+        logger.debug('Not star or not self, skip.')
+        return next()
+      }
+
+      if (!content.startsWith(command)) {
+        logger.debug(`Not match command "${command}", skip`)
+        return next()
+      }
+
+      // 只有不跳过才检查
+      if (!isYes(skipShouldReplyCheck)) {
+        logger.debug(`Skip should reply check`)
+
+        // 无需回复
+        if (!(await client.shouldReply(context))) {
+          logger.debug(`Should not reply, skip`)
+          return next()
+        }
+      }
+
+      return applyReplyMiddleware(context, next)
+    }
+  }
+
+  logger.info(`Register command: "<Bold:${command}>"`)
+  return Object.assign(commandMiddlewareFactory, { command, usage, description })
 }

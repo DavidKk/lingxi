@@ -10,11 +10,14 @@ export type Middleware<T> = (context: T, next: MiddlewareNext) => MiddlewareResu
 export type ExtractMiddlewareCoordinatorContext<T> = T extends MiddlewareCoordinator<infer A> ? A : never
 
 export interface MiddlewareCoordinatorOptions<T> extends CoreServiceOptions {
+  name?: string
   middlewares?: Middleware<T>[]
 }
 
 export class MiddlewareCoordinator<T> extends CoreServiceAbstract {
+  static NAME = 'AnonymousMiddlewareCoordinator'
   protected middlewares: Set<Middleware<T>>
+  protected _name: string
 
   constructor(options?: MiddlewareCoordinatorOptions<T>) {
     super(options)

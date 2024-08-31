@@ -4,14 +4,14 @@ export function createHeader(data: any) {
 
     return {
       'Content-Type': 'application/json',
-      'Content-Length': Buffer.byteLength(content),
+      'Content-Length': Buffer.byteLength(content).toString(),
     }
   }
 
   if (typeof data === 'string') {
     return {
       'Content-Type': 'text/html',
-      'Content-Length': Buffer.byteLength(data),
+      'Content-Length': Buffer.byteLength(data).toString(),
     }
   }
 }
