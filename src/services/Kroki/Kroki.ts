@@ -34,6 +34,10 @@ export class Kroki extends CoreServiceAbstract {
 
   /** 将 Markdown 内容与图表拆分开来 */
   public async processMarkdown(markdown: string) {
+    if (typeof markdown !== 'string') {
+      return markdown
+    }
+
     if (!this.serverUrl) {
       return markdown
     }

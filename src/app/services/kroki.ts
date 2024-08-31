@@ -10,6 +10,10 @@ if (process.env.KROKI_SERVER_URL) {
 
 /** 将 Markdown 中的内容转换成一系列按顺序排列的文本和图片 */
 export async function processMarkdownToTextAndImages(markdown: string) {
+  if (typeof markdown !== 'string' || !markdown) {
+    return markdown
+  }
+
   if (!krokiService) {
     return markdown
   }
