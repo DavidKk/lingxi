@@ -12,6 +12,7 @@
     "checkJs": false,
     "noEmit": true,
     "isolatedModules": true,
+    "experimentalDecorators": true,
     "strictPropertyInitialization": false,
     "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
@@ -19,6 +20,7 @@
     "skipLibCheck": true,
     "incremental": true,
     "esModuleInterop": true,
+    "typeRoots": ["./node_modules/@types", "./node_modules/@types/node", "./typings.d"],
     // 插件
     "plugins": [
       // 路径别名，编译成 .js

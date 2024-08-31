@@ -6,7 +6,7 @@
   "type": "commonjs",
   "repository": {
     "type": "git",
-    "url": "https://github.com/DavidKk/ai-assistant-wechat.git"
+    "url": "https://github.com/DavidKk/lingxi.git"
   },
   "scripts": {
     "commit": "git-cz",
@@ -16,22 +16,27 @@
     "clear": "rimraf --glob ./{libs,build,*.tsbuildinfo}",
     "format": "prettier --config .prettierrc.js --write \"**/*.{js,jsx,ts,tsx,d.ts,vue,md,json,yml,yaml}\"",
     "lint": "pnpm lint:ts",
-    "lint:ts": "eslint -c eslint.config.mjs --fix .",
+    "lint:ts": "eslint --fix . --ignore-path .gitignore",
     "test": "jest -c ./jest.config.ts --coverage --reporters=default --reporters=jest-junit",
     "test:watch": "jest --watch",
     "compile": "tsc --build ./tsconfig.compile.json",
     "dev": "tsx watch ./src/index.ts",
     "start": "node ./libs/index.js",
-    "ok": "pnpm format && pnpm lint && pnpm test"
+    "ok": "pnpm format && pnpm lint && pnpm compile && pnpm test"
   },
   "dependencies": {
-    "axios": "^1.7.2",
     "chalk": "^4.0.0",
     "dotenv": "^16.4.5",
+    "file-box": "^1.4.15",
     "lodash": "^4.17.21",
+    "memfs": "^4.11.1",
+    "nodemailer": "^6.9.14",
+    "path-to-regexp": "^7.1.0",
     "pretty-error": "^4.0.0",
     "qrcode": "^1.5.3",
     "qrcode-terminal": "^0.12.0",
+    "strip-ansi": "^6",
+    "utility-types": "^3.11.0",
     "wechaty": "^1.20.2",
     "wechaty-puppet": "^1.20.2",
     "wechaty-puppet-wechat": "^1.18.4"
@@ -43,6 +48,7 @@
     "@types/jest": "^29.5.12",
     "@types/lodash": "^4.17.7",
     "@types/node": "^20.14.11",
+    "@types/nodemailer": "^6.4.15",
     "@types/qrcode": "^1.5.5",
     "@types/qrcode-terminal": "^0.12.2",
     "@types/react": "18.3.3",
@@ -53,10 +59,10 @@
     "commitlint-plugin-i18n": "^0.0.1-alpha.3",
     "cz-customizable": "^7.2.1",
     "cz-customizable-i18n-config": "^0.0.1-alpha.2",
-    "eslint": "^9.7.0",
+    "eslint": "^8.52.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-import": "^2.29.0",
-    "eslint-plugin-prettier": "^5.2.1",
+    "eslint-plugin-prettier": "^5.0.1",
     "husky": "^9.1.1",
     "jest": "^29.7.0",
     "jest-junit": "^16.0.0",

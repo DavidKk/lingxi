@@ -3,6 +3,6 @@ module.exports = {
     return ['prettier', '--config .prettierrc.js', '--write', ...files].join(' ')
   },
   '**/*.{ts,tsx,d.ts,mjs}': async (files) => {
-    return ['eslint', '--config eslint.config.mjs', '--max-warnings 0', ...files].join(' ')
+    return ['eslint', '--max-warnings 0', ...files].join(' ')
   },
 }

@@ -5,6 +5,11 @@ export class LimitedArray<T> {
   /** 数组的容量限制 */
   private capacity: number
 
+  /** 获取当前容量大小 */
+  public get length() {
+    return this.array.length
+  }
+
   constructor(capacity: number) {
     this.array = []
     this.capacity = capacity

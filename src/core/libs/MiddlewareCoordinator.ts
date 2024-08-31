@@ -1,40 +1,76 @@
-import type { ServiceOptions } from './Service'
-import { Service } from './Service'
+import { CoreServiceAbstract, type CoreServiceOptions } from './CoreServiceAbstract'
 
-export type MiddlewareNext = () => Promise<void> | void
+export type MiddlewareNextResult = Promise<void> | void
+export type MiddlewareNext = () => MiddlewareNextResult
 
-export type Middleware<T> = (context: T, next: MiddlewareNext) => Promise<void> | void
+export type MiddlewareResult = Promise<void> | void
+export type Middleware<T> = (context: T, next: MiddlewareNext) => MiddlewareResult
 
-export type MiddlewareCoordinatorOptions = ServiceOptions
+/** 提取 MiddlewareCoordinator 中的上下文 */
+export type ExtractMiddlewareCoordinatorContext<T> = T extends MiddlewareCoordinator<infer A> ? A : never
 
-export class MiddlewareCoordinator<T> extends Service {
+export interface MiddlewareCoordinatorOptions<T> extends CoreServiceOptions {
+  name?: string
+  middlewares?: Middleware<T>[]
+}
+
+export class MiddlewareCoordinator<T> extends CoreServiceAbstract {
+  static NAME = 'AnonymousMiddlewareCoordinator'
   protected middlewares: Set<Middleware<T>>
+  protected _name: string
 
-  constructor(options?: MiddlewareCoordinatorOptions) {
+  constructor(options?: MiddlewareCoordinatorOptions<T>) {
     super(options)
-    this.middlewares = new Set<Middleware<T>>()
+
+    const { middlewares = [] } = options || {}
+    this.middlewares = new Set<Middleware<T>>(middlewares)
+  }
+
+  public get size() {
+    return this.middlewares.size
   }
 
   public use(middleware: Middleware<T>) {
-    if (typeof middleware === 'function') {
-      this.middlewares.add(middleware)
+    if (typeof middleware !== 'function') {
+      return
     }
+
+    this.middlewares.add(middleware)
   }
 
   public async execute(context: T) {
     const stack = this.middlewares.values()
     const next = async () => {
       const result = stack.next()
-      if (!result.done && result.value) {
-        try {
-          await result.value(context, next)
-        } catch (error) {
-          this.logger.fail(`Error executing middleware stack: ${error}`)
-          throw error
-        }
+      if (result.done || !result.value) {
+        return
       }
+
+      const apply = this.ensureNextCalled(result.value)
+      await apply(context, next)
     }
 
     await next()
+  }
+
+  protected ensureNextCalled(middleware: Middleware<T>) {
+    return async (context: T, next: MiddlewareNext) => {
+      let nextCalled = false
+
+      try {
+        await middleware(context, () => {
+          nextCalled = true
+          return next()
+        })
+      } catch (error) {
+        this.logger.fail(`Middleware execute failed: ${error}`)
+      } finally {
+        if (nextCalled) {
+          return
+        }
+
+        this.logger.debug('Next function was not called in middleware')
+      }
+    }
   }
 }

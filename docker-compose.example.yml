@@ -1,18 +1,45 @@
 version: '3.8'
 services:
-  ai-assistant-wechat:
-    container_name: ai-assistant-wechat
-    image: ghcr.io/davidkk/ai-assistant-wechat:latest
-    volumes:
-      - path/to/libs:/ai-assistant-wechat/libs # option
-      - path/to/WeChatRobot.memory-card.json:/ai-assistant-wechat/WeChatRobot.memory-card.json:rw # option
+  lingxi:
+    container_name: lingxi
+    image: ghcr.io/davidkk/lingxi:latest
     environment:
+      # 用户
+      - PUID=1000
+      - PGID=1000
+      # 时区
+      - TZ=Asia/Shanghai
+      # 生产环境
       - NODE_ENV=production
-      # Apprise 服务地址
-      - APPRISE_SERVER_URL=
-      # Gemini API 地址
+      # Apprise 服务地址 (可选)
+      - APPRISE_ENDPOINT=
+      # Kroki 服务地址（可选，官方为 "https://kroki.io"）
+      - KROKI_SERVER_URL=
+      # Gemini API 地址 (可选)
       - GEMINI_API_SERVER_ENDPOINT=
-      # Gemini API 请求 TOKEN
+      # Gemini API 请求 TOKEN (可选)
       - GEMINI_API_TOKEN=
-      # Gemini Vercel 秘钥
+      # Gemini Vercel 秘钥 (可选)
       - GEMINI_VERCEL_SECRET=
+      # 邮箱通知的邮箱地址 (可选)
+      - EMAIL_NOTIFY_TO=
+      # SMTP 用户名 (可选)
+      - EMAIL_SMTP_USER=
+      # SMTP 密码 (可选)
+      - EMAIL_SMTP_PASS=
+      # SMTP 服务地址 (可选)
+      - EMAIL_SMTP_HOST=
+      # SMTP 端口，默认为 465 (可选)
+      - EMAIL_SMTP_PORT=465
+      # 是否为 SSL，有值则为 true 默认为 true (可选)
+      - EMAIL_SMTP_SECURE=true
+      # Sonarr 服务地址 (可选)
+      - SONARR_SERVER_URL=
+      # Radarr 服务地址 (可选)
+      - RADARR_SERVER_URL=
+      # HTTP 服务端口 (可选)
+      - SERVER_PORT=3000
+    volumes:
+      - path/to/wechaty.memory-card.json:/app/wechaty.memory-card.json:rw
+      - path/to/logs:/app/logs:rw
+      - path/to/chats:/app/chats:rw
